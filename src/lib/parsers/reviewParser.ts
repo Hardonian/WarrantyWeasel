@@ -18,10 +18,8 @@ function parseJsonLd(html: string): Partial<ParsedData> | null {
   try {
     const jsonLdContents = extractJsonLdScripts(html)
 
-    const scripts = $('script[type="application/ld+json"]')
-    for (let i = 0; i < scripts.length; i++) {
-      const content = $(scripts[i]).html()
-      if (!content) continue
+    for (const content of jsonLdContents) {
+      if (!content || !content.trim()) continue
 
       try {
         const data = JSON.parse(content)
@@ -171,13 +169,13 @@ function extractReviewFromElement($el: cheerio.Cheerio<any>, index: number): Par
 }
 
 function detectCategoryFromDOM(html: string): string | null {
-  const $ = cheerio.load(sanitizeHtml(html))
+  const $ = cheerio.load(html)
   const body = $('body').text().toLowerCase()
 
   const categoryKeywords: Record<string, RegExp[]> = {
     electronics: [/\b(phone|laptop|tablet|headphone|speaker|camera|tv|monitor|charger|electronics?)\b/],
     tools: [/\b(drill|saw|hammer|wrench|tool|sander|grinder)\b/],
-    apparel: [/\b(shirt|pants|dress|shoe|jacket|clothing|apparel)\b/],
+    apparel: [/\b(shirt|pants|dress|shoe|jacket|clothing|apparel)s?\b/],
     home_goods: [/\b(furniture|lamp|curtain|rug|kitchen|cookware)\b/],
     digital: [/\b(software|app|subscription|game|download|digital)\b/],
   }

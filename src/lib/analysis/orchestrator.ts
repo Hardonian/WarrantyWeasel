@@ -5,7 +5,7 @@ import { runSignalDetection } from '@/lib/signals/signalDetector'
 import { computeScore } from '@/lib/scoring/scoreCalculator'
 import { validateUrl, normalizeUrl } from '@/lib/security/urlValidator'
 import { MIN_REVIEWS_FOR_ANALYSIS, getFailureScenario } from '@/lib/intel'
-import { getCachedResult, setCachedResult, generateUrlHash } from './cache'
+import { getCachedResult, generateUrlHash } from './cache'
 
 const SCHEMA_VERSION = '1.0.0'
 
