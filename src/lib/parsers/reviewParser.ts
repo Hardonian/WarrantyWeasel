@@ -173,11 +173,11 @@ function detectCategoryFromDOM(html: string): string | null {
   const body = $('body').text().toLowerCase()
 
   const categoryKeywords: Record<string, RegExp[]> = {
-    electronics: [/\b(phone|laptop|tablet|headphone|speaker|camera|tv|monitor|charger|electronics?)\b/],
-    tools: [/\b(drill|saw|hammer|wrench|tool|sander|grinder)\b/],
-    apparel: [/\b(shirt|pants|dress|shoe|jacket|clothing|apparel)s?\b/],
-    home_goods: [/\b(furniture|lamp|curtain|rug|kitchen|cookware)\b/],
-    digital: [/\b(software|app|subscription|game|download|digital)\b/],
+    electronics: [/\b(phone|laptop|tablet|headphones?|speakers?|cameras?|tv|monitor|charger|electronics?)\b/i],
+    tools: [/\b(drill|saw|hammer|wrench|tools?|sander|grinder)\b/i],
+    apparel: [/\b(shirts?|pants?|dress|shoes?|jackets?|clothing|apparel)\b/i],
+    home_goods: [/\b(furniture|lamps?|curtains?|rugs?|kitchen|cookware)\b/i],
+    digital: [/\b(software|apps?|subscription|games?|download|digital)\b/i],
   }
 
   for (const [category, patterns] of Object.entries(categoryKeywords)) {
