@@ -3,10 +3,20 @@ import type { ParsedReview, ParsedData } from '@/types'
 import { sanitizeHtml } from '@/lib/security/urlValidator'
 import { MAX_REVIEWS_TO_PARSE } from '@/lib/intel'
 
+function extractJsonLdScripts(html: string): string[] {
+  // Extract JSON-LD script contents BEFORE sanitization (sanitizeHtml removes script tags)
+  const results: string[] = []
+  const regex = /<script[^>]*type\s*=\s*["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi
+  let match: RegExpExecArray | null
+  while ((match = regex.exec(html)) !== null) {
+    results.push(match[1])
+  }
+  return results
+}
+
 function parseJsonLd(html: string): Partial<ParsedData> | null {
   try {
-    const sanitized = sanitizeHtml(html)
-    const $ = cheerio.load(sanitized)
+    const jsonLdContents = extractJsonLdScripts(html)
 
     const scripts = $('script[type="application/ld+json"]')
     for (let i = 0; i < scripts.length; i++) {
