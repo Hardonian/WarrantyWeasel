@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { AnalysisResult } from '@/types';
 
@@ -8,6 +8,7 @@ export default function ResultPage() {
   const { id } = useParams();
   const router = useRouter();
   const [result, setResult] = useState<AnalysisResult | null>(null);
+  const barRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (id) {
@@ -21,6 +22,12 @@ export default function ResultPage() {
       }
     }
   }, [id]);
+
+  useEffect(() => {
+    if (barRef.current && result) {
+      barRef.current.style.width = `${result.confidence}%`;
+    }
+  }, [result]);
 
   if (!result) {
     return (
@@ -69,8 +76,8 @@ export default function ResultPage() {
             </div>
             <div className="h-4 overflow-hidden rounded-full bg-gray-200">
               <div 
-                className="h-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-1000 ease-out" 
-                style={{ width: `${result.confidence}%` }}
+                ref={barRef}
+                className="h-full w-0 bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-1000 ease-out"
               ></div>
             </div>
           </div>

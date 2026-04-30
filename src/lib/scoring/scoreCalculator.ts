@@ -145,6 +145,7 @@ export function computeScore(
     confidence: confidenceData.confidence,
     confidenceExplanation: confidenceData.explanation,
     signals: adjustedSignals,
+    reasons,
     limitations,
   }
 }
