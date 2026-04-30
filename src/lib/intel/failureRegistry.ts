@@ -160,7 +160,7 @@ export const failureScenarios: FailureScenario[] = [
   // FS-14: Timeout during fetch
   {
     id: 'FS-14',
-    scenario: 'Request times out before response',
+    scenario: 'Request timeout during fetch',
     trigger: 'Fetch exceeds timeout threshold',
     expectedBehavior: 'Catch timeout, try fallback strategy, report degraded',
     badBehavior: 'Hang indefinitely or crash',
