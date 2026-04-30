@@ -48,4 +48,29 @@ export interface AnalysisResult {
   degraded?: boolean;
   errorCode?: ErrorCode;
 }
+export interface FailureScenario {
+  id: string;
+  scenario: string;
+  trigger: string;
+  expectedBehavior: string;
+  badBehavior: string;
+  fix: string;
+  userMessage: string;
+  confidenceImpact: number;
+  testCase: string;
+}
 
+export interface SuspiciousSignal {
+  name: string;
+  description: string;
+  weight: number;
+  example: string;
+  explanation: string;
+}
+
+export interface SafeSignal {
+  name: string;
+  description: string;
+  weight: number;
+  example: string;
+}
