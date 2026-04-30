@@ -84,7 +84,7 @@ export default function Home() {
       </form>
 
       <div className="mt-8 rounded-lg border border-gray-200 bg-white p-6">
-        <h3 className="mb-3 font-semibold">What ReviewGhost Detects</h3>
+        <h2 className="mb-3 font-semibold">What ReviewGhost Detects</h2>
         <ul className="space-y-2 text-sm text-gray-600">
           <li className="flex items-start gap-2">
             <span className="mt-1 text-red-500">&#9888;</span>

@@ -25,6 +25,33 @@ const BLOCKED_HOSTS = [
   'metadata.azure.com',
 ]
 
+export function normalizeUrl(urlStr: string): string {
+  try {
+    const url = new URL(urlStr)
+    // Remove search params often used for tracking (UTM, ref, qid, etc)
+    const trackingParams = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'ref', 'qid', 'sr', 'ie', 'tag']
+    trackingParams.forEach(p => url.searchParams.delete(p))
+    
+    // Sort remaining params for consistency
+    url.searchParams.sort()
+    
+    // Lowercase hostname
+    url.hostname = url.hostname.toLowerCase()
+    
+    // Remove trailing slash from pathname if present
+    if (url.pathname.length > 1 && url.pathname.endsWith('/')) {
+      url.pathname = url.pathname.slice(0, -1)
+    }
+    
+    // Standardize protocol to https
+    url.protocol = 'https:'
+    
+    return url.toString()
+  } catch {
+    return urlStr
+  }
+}
+
 export function validateUrl(input: string): { valid: boolean; error?: string; url?: URL } {
   let parsedUrl: URL
   try {

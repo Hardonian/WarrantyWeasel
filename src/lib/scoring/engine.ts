@@ -41,6 +41,8 @@ export function analyzeProduct(data: ScrapedData): AnalysisResult {
       evidence: [],
       limitations: ['Full page content could not be retrieved.'],
       degraded: true,
+      url: data.failureReason || 'unknown',
+      reviewCount: 0,
     };
   }
 
@@ -96,5 +98,7 @@ export function analyzeProduct(data: ScrapedData): AnalysisResult {
     signals,
     evidence,
     limitations,
+    url: 'legacy_engine_result',
+    reviewCount: data.reviewCount || 0,
   };
 }

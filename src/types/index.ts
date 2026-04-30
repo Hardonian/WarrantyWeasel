@@ -55,6 +55,7 @@ export interface ScoreResult {
   confidence: number;
   confidenceExplanation: string;
   signals: SignalResult[];
+  reasons: string[];
   limitations: string[];
 }
 
