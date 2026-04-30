@@ -72,6 +72,9 @@ export interface AnalysisResult {
   limitations: string[];
   degraded?: boolean;
   errorCode?: ErrorCode;
+  reviewCount: number;
+  productName?: string;
+  category?: string;
 }
 export interface CategoryRule {
   category: string;
