@@ -1,53 +1,170 @@
-export interface CategoryRule {
-  category: string;
-  expected_patterns: string[];
-  normal_anomalies: string[];
-  high_risk_signals: string[];
-  weight_adjustments: { signalId: string; weightModifier: number }[];
-  false_positive_traps: string[];
-}
+import type { CategoryRule, EdgeCase } from '@/types'
 
 export const categoryRules: CategoryRule[] = [
   {
     category: 'electronics',
-    expected_patterns: ['battery life', 'performance', 'screen quality', 'specs'],
-    normal_anomalies: ['doa units', 'shipping damage'],
-    high_risk_signals: ['perfect 5-star burst', 'generic praise'],
-    weight_adjustments: [
-      { signalId: 'SIG-S009', weightModifier: 1.2 },
-      { signalId: 'SIG-S010', weightModifier: 0.8 },
-    ],
-    false_positive_traps: ['viral tech review spikes', 'enthusiast niche hardware'],
+    adjustments: {
+      safety_concern: 1.5,
+      warranty_complaint: 1.3,
+      counterfeit_signal: 1.4,
+      verified_inconsistency: 1.2,
+      ai_generated_pattern: 1.1,
+      detailed_reviews: 1.2,
+    },
+    description: 'Electronics carry higher risk for counterfeits, safety issues, and warranty problems.',
   },
   {
     category: 'tools',
-    expected_patterns: ['durability', 'torque', 'build quality', 'heaviness'],
-    normal_anomalies: ['case quality issues', 'missing small parts'],
-    high_risk_signals: ['aesthetic only praise', 'fake professional endorsements'],
-    weight_adjustments: [
-      { signalId: 'SIG-G002', weightModifier: 1.5 },
-    ],
-    false_positive_traps: ['bulk purchases by contractors'],
+    adjustments: {
+      safety_concern: 1.6,
+      warranty_complaint: 1.4,
+      verified_consistent: 1.1,
+      detailed_reviews: 1.2,
+    },
+    description: 'Tools carry significant safety risk. Safety concerns weighted heavily.',
   },
   {
     category: 'apparel',
-    expected_patterns: ['sizing', 'fit', 'material', 'wash quality'],
-    normal_anomalies: ['color mismatch in photos'],
-    high_risk_signals: ['no mention of sizing', 'stock photo uploads'],
-    weight_adjustments: [
-      { signalId: 'SIG-S002', weightModifier: 1.5 },
-    ],
-    false_positive_traps: ['influencer collection drops'],
+    adjustments: {
+      category_drift: 1.3,
+      review_hijacking: 1.2,
+      linguistic_mirror: 1.2,
+      mixed_sentiment: 1.1,
+    },
+    description: 'Apparel has high variant confusion and review hijacking risk.',
   },
   {
-    category: 'supplements',
-    expected_patterns: ['taste', 'solubility', 'energy levels'],
-    normal_anomalies: ['packaging changes'],
-    high_risk_signals: ['miracle claims', 'instant results'],
-    weight_adjustments: [
-      { signalId: 'SIG-S002', weightModifier: 1.8 },
-      { signalId: 'SIG-S009', weightModifier: 1.5 },
-    ],
-    false_positive_traps: ['biohacker community spikes'],
+    category: 'home_goods',
+    adjustments: {
+      safety_concern: 1.3,
+      detailed_reviews: 1.1,
+      temporal_natural: 1.1,
+    },
+    description: 'Home goods have moderate safety risk. Detailed reviews are more reliable.',
+  },
+  {
+    category: 'digital',
+    adjustments: {
+      subscription_trap: 1.5,
+      review_gap: 1.2,
+      verified_inconsistency: 1.3,
+      anonymity_ratio: 1.2,
+    },
+    description: 'Digital products have high subscription trap and verification risks.',
+  },
+  {
+    category: 'food_supplement',
+    adjustments: {
+      safety_concern: 1.6,
+      counterfeit_signal: 1.4,
+      incentive_disclosure: 1.3,
+      regulatory_concern: 1.5,
+    },
+    description: 'Food and supplements carry high safety and regulatory risk.',
+  },
+  {
+    category: 'automotive',
+    adjustments: {
+      safety_concern: 1.7,
+      warranty_complaint: 1.5,
+      verified_consistent: 1.2,
+      detailed_reviews: 1.3,
+    },
+    description: 'Automotive products have the highest safety weighting. Verified reviews carry more weight.',
+  },
+  {
+    category: 'general',
+    adjustments: {},
+    description: 'Default category with no adjustments applied.',
+  },
+]
+
+export const edgeCases: EdgeCase[] = [
+  {
+    id: 'EC-01',
+    description: 'Product has fewer than 5 reviews',
+    handling: 'Return UNKNOWN with note about insufficient data. Minimum threshold for analysis is 5 reviews.',
+  },
+  {
+    id: 'EC-02',
+    description: 'All reviews are the same rating',
+    handling: 'Flag as suspicious. Natural products rarely have 100% uniform ratings. Increase confidence penalty.',
+  },
+  {
+    id: 'EC-03',
+    description: 'Product is brand new (listed < 7 days)',
+    handling: 'Note that review patterns are not yet established. Lower confidence ceiling to 60%.',
+  },
+  {
+    id: 'EC-04',
+    description: 'Reviews in multiple languages',
+    handling: 'Analyze each language group separately. Flag if sentiment differs significantly by language.',
+  },
+  {
+    id: 'EC-05',
+    description: 'Product has been re-listed under new ASIN/ID',
+    handling: 'Detect listing age vs review age mismatch. Flag review hijacking risk.',
+  },
+  {
+    id: 'EC-06',
+    description: 'Review page uses infinite scroll',
+    handling: 'Attempt to fetch paginated API endpoints. If unavailable, note data limitation.',
+  },
+  {
+    id: 'EC-07',
+    description: 'Reviews are behind login wall',
+    handling: 'Return UNKNOWN. Cannot access authenticated content. Suggest user check manually.',
+  },
+  {
+    id: 'EC-08',
+    description: 'Product has been recalled',
+    handling: 'If recall detected, return AVOID regardless of review scores. Flag safety concern prominently.',
+  },
+  {
+    id: 'EC-09',
+    description: 'Seller has multiple storefronts for same product',
+    handling: 'Detect duplicate listings. Flag potential review fragmentation or manipulation.',
+  },
+  {
+    id: 'EC-10',
+    description: 'Review system uses non-standard rating scale',
+    handling: 'Normalize ratings to 5-point scale. Detect and handle 10-point, percentage, or thumbs-up/down systems.',
+  },
+]
+
+export function getCategoryRule(category: string): CategoryRule | undefined {
+  return categoryRules.find((cr) => cr.category === category.toLowerCase())
+}
+
+export function detectCategory(productName: string, metadata: Record<string, unknown>): string {
+  const name = productName.toLowerCase()
+  const description = String(metadata.description || '').toLowerCase()
+  const combined = `${name} ${description}`
+
+  if (/\b(phone|laptop|tablet|headphone|speaker|camera|tv|monitor|charger|cable|battery|usb|bluetooth|wireless|electronics?)\b/.test(combined)) {
+    return 'electronics'
   }
-];
+  if (/\b(drill|saw|hammer|wrench|tool|sander|grinder|driver|pliers|socket)\b/.test(combined)) {
+    return 'tools'
+  }
+  if (/\b(shirt|pants|dress|shoe|jacket|coat|hat|sock|apparel|clothing|fashion|wear)\b/.test(combined)) {
+    return 'apparel'
+  }
+  if (/\b(furniture|lamp|curtain|rug|pillow|blanket|decor|kitchen|cookware|appliance)\b/.test(combined)) {
+    return 'home_goods'
+  }
+  if (/\b(software|app|subscription|game|download|digital|ebook|course|streaming)\b/.test(combined)) {
+    return 'digital'
+  }
+  if (/\b(vitamin|supplement|protein|pill|capsule|powder|herb|organic|health)\b/.test(combined)) {
+    return 'food_supplement'
+  }
+  if (/\b(car|auto|vehicle|tire|oil|brake|filter|motor|engine|automotive)\b/.test(combined)) {
+    return 'automotive'
+  }
+  return 'general'
+}
+
+export function getEdgeCase(id: string): EdgeCase | undefined {
+  return edgeCases.find((ec) => ec.id === id)
+}
