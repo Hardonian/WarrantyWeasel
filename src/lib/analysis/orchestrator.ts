@@ -1,4 +1,4 @@
-import type { AnalysisResult, FetchResult, ParsedData, SignalResult } from '@/types'
+import type { AnalysisResult, FetchResult, ParsedData, SignalResult, SignalEvidence } from '@/types'
 import { fetchController } from '@/lib/scraper/fetchController'
 import { parseReviews } from '@/lib/parsers/reviewParser'
 import { runSignalDetection } from '@/lib/signals/signalDetector'
@@ -6,12 +6,20 @@ import { computeScore } from '@/lib/scoring/scoreCalculator'
 import { validateUrl } from '@/lib/security/urlValidator'
 import { MIN_REVIEWS_FOR_ANALYSIS, getFailureScenario } from '@/lib/intel'
 
+const SCHEMA_VERSION = '1.0.0'
+
+function generateId(url: string): string {
+  return 'res_' + Buffer.from(url).toString('hex').slice(0, 12)
+}
+
 export async function analyzeUrl(url: string): Promise<AnalysisResult> {
   // Validate URL first
   const validation = validateUrl(url)
   if (!validation.valid) {
     return {
+      schemaVersion: SCHEMA_VERSION,
       ok: true,
+      resultId: generateId(url),
       verdict: 'UNKNOWN',
       confidence: 0,
       confidenceExplanation: validation.error || 'Invalid URL.',
@@ -31,7 +39,9 @@ export async function analyzeUrl(url: string): Promise<AnalysisResult> {
   if (!fetchResult.success && !fetchResult.html) {
     const failureScenario = fetchResult.failureId ? getFailureScenario(fetchResult.failureId) : null
     return {
+      schemaVersion: SCHEMA_VERSION,
       ok: true,
+      resultId: generateId(url),
       verdict: 'UNKNOWN',
       confidence: 0,
       confidenceExplanation: fetchResult.userMessage || 'Unable to access the review page.',
@@ -69,7 +79,7 @@ export async function analyzeUrl(url: string): Promise<AnalysisResult> {
 
   // Build evidence from signals
   const evidence = signals.flatMap((s) =>
-    s.evidence.map((e) => ({
+    (s.evidence || []).map((e: SignalEvidence) => ({
       signal: s.name,
       snippet: e.snippet,
       source: e.source,
@@ -78,7 +88,9 @@ export async function analyzeUrl(url: string): Promise<AnalysisResult> {
 
   // Build final result
   const result: AnalysisResult = {
+    schemaVersion: SCHEMA_VERSION,
     ok: true,
+    resultId: generateId(url),
     verdict: scoreResult.verdict,
     confidence: scoreResult.confidence,
     confidenceExplanation: scoreResult.confidenceExplanation,
