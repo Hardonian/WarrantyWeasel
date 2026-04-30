@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
 
     const result = await analyzeUrl(url)
     return NextResponse.json(result)
-  } catch (error) {
+  } catch (_error) {
     // Never hard 500 - always return graceful error
     return NextResponse.json(
       {

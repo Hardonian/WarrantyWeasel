@@ -147,7 +147,7 @@ export function detectCategory(productName: string, metadata: Record<string, unk
   if (/\b(drill|saw|hammer|wrench|tool|sander|grinder|driver|pliers|socket)\b/.test(combined)) {
     return 'tools'
   }
-  if (/\b(shirt|pants|dress|shoe|jacket|coat|hat|sock|apparel|clothing|fashion|wear)\b/.test(combined)) {
+  if (/\b(shirts?|pants?|dress|shoes?|jackets?|coat|hat|sock|apparel|clothing|fashion|wear)\b/.test(combined)) {
     return 'apparel'
   }
   if (/\b(furniture|lamp|curtain|rug|pillow|blanket|decor|kitchen|cookware|appliance)\b/.test(combined)) {
