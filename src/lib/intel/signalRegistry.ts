@@ -1,37 +1,207 @@
-export interface ReviewSignal {
-  id: string;
-  name: string;
-  type: 'SUSPICIOUS' | 'SAFE' | 'HYBRID';
-  weight: number;
-  description: string;
-  combination_logic?: string;
-  example?: string;
-  consumer_explanation?: string;
+import type { SuspiciousSignal, SafeSignal } from '@/types'
+
+export const suspiciousSignals: SuspiciousSignal[] = [
+  {
+    name: 'temporal_sync',
+    description: 'Multiple reviews posted within a narrow time window',
+    weight: 15,
+    example: '47 reviews posted within 48 hours',
+    explanation: 'Organic review patterns typically show natural distribution over time. Clustering suggests coordinated posting.',
+  },
+  {
+    name: 'burst_pattern',
+    description: 'Sudden spike in review volume inconsistent with product lifecycle',
+    weight: 12,
+    example: '200 reviews in one week after months of 2-3 per week',
+    explanation: 'Review bursts often indicate campaigns, incentives, or manipulation events.',
+  },
+  {
+    name: 'linguistic_mirror',
+    description: 'Multiple reviews share unusual phrasing or sentence structure',
+    weight: 18,
+    example: 'Three reviews use identical uncommon phrases',
+    explanation: 'Independent reviewers rarely use identical phrasing. Shared language suggests common authorship or templates.',
+  },
+  {
+    name: 'sentiment_mismatch',
+    description: 'Review text sentiment contradicts the star rating given',
+    weight: 10,
+    example: '5-star review with text describing multiple product failures',
+    explanation: 'Mismatch between rating and text content suggests the rating may not reflect genuine experience.',
+  },
+  {
+    name: 'keyword_spam',
+    description: 'Reviews contain unnatural repetition of product/brand keywords',
+    weight: 14,
+    example: '"This XYZ Brand XYZ Product is the best XYZ Product from XYZ Brand"',
+    explanation: 'Keyword stuffing is a common manipulation technique to boost search visibility.',
+  },
+  {
+    name: 'anonymity_ratio',
+    description: 'High proportion of reviews from anonymous or single-review accounts',
+    weight: 12,
+    example: '78% of reviewers have only posted this one review',
+    explanation: 'Legitimate reviewers typically have a history. High anonymity suggests incentivized or fake reviews.',
+  },
+  {
+    name: 'helpful_vote_anomaly',
+    description: 'Helpful votes correlate suspiciously with positive ratings',
+    weight: 10,
+    example: 'All 5-star reviews have 50+ helpful votes, all 1-star have 0-2',
+    explanation: 'Natural helpful vote distribution should not perfectly align with rating polarity.',
+  },
+  {
+    name: 'category_drift',
+    description: 'Reviews discuss features inconsistent with the product category',
+    weight: 16,
+    example: 'Electronics reviews discussing fabric quality',
+    explanation: 'Reviews for the wrong product indicate listing manipulation or review hijacking.',
+  },
+  {
+    name: 'geo_impossible',
+    description: 'Reviewer locations inconsistent with product availability',
+    weight: 11,
+    example: 'Product only sold in US, but 60% of reviews from non-US locations',
+    explanation: 'Geographic mismatch suggests reviews may not be for this specific product listing.',
+  },
+  {
+    name: 'honeypot_hidden',
+    description: 'Hidden review content detected in page DOM',
+    weight: 20,
+    example: 'Reviews in display:none containers not visible to users',
+    explanation: 'Hidden content may be injected to manipulate automated analysis while remaining invisible to users.',
+  },
+  {
+    name: 'rating_polarization',
+    description: 'Bimodal rating distribution with few middle ratings',
+    weight: 13,
+    example: '70% 5-star, 25% 1-star, 5% everything else',
+    explanation: 'Natural products typically show normal distribution. Polarization suggests manipulation on both sides.',
+  },
+  {
+    name: 'incentive_disclosure',
+    description: 'Reviews mention receiving product at discount or for free',
+    weight: 14,
+    example: '"I received this product at a discount in exchange for my honest review"',
+    explanation: 'Incentivized reviews tend to be more positive and may not reflect typical customer experience.',
+  },
+  {
+    name: 'ai_generated_pattern',
+    description: 'Review text shows patterns consistent with AI generation',
+    weight: 17,
+    example: 'Overly structured paragraphs, generic praise, lack of specific detail',
+    explanation: 'AI-generated reviews lack authentic experience markers and often follow predictable patterns.',
+  },
+  {
+    name: 'verified_inconsistency',
+    description: 'Verified purchase badges present but content contradicts actual purchase',
+    weight: 16,
+    example: '"Verified Purchase" badge on review that describes never receiving the product',
+    explanation: 'Badge systems can be gamed. Content that contradicts purchase suggests badge manipulation.',
+  },
+  {
+    name: 'review_hijacking',
+    description: 'Reviews appear to be for a different product than currently listed',
+    weight: 22,
+    example: 'Product is a phone case but reviews discuss a phone charger',
+    explanation: 'Listing hijacking repurposes old reviews for new products, making reviews irrelevant to current offering.',
+  },
+  {
+    name: 'safety_concern',
+    description: 'Reviews mention safety hazards, injuries, or recalls',
+    weight: 25,
+    example: '"This overheated and caught fire"',
+    explanation: 'Safety concerns in reviews are high-signal indicators that warrant immediate attention regardless of overall rating.',
+  },
+  {
+    name: 'warranty_complaint',
+    description: 'Reviews mention warranty denial or voided coverage',
+    weight: 15,
+    example: '"Warranty claim denied because of fine print"',
+    explanation: 'Warranty issues mentioned in reviews may reveal gaps not disclosed in the product listing.',
+  },
+  {
+    name: 'counterfeit_signal',
+    description: 'Reviews suggest product may be counterfeit or different from description',
+    weight: 20,
+    example: '"Packaging looked different from official product, quality is poor"',
+    explanation: 'Counterfeit concerns in reviews suggest the listing may not represent the genuine product.',
+  },
+  {
+    name: 'subscription_trap',
+    description: 'Reviews mention unexpected recurring charges or subscription terms',
+    weight: 18,
+    example: '"Was charged monthly after free trial, hard to cancel"',
+    explanation: 'Subscription traps are a common consumer complaint that may not be clear from the product listing.',
+  },
+  {
+    name: 'review_gap',
+    description: 'Significant gaps in review timeline suggesting selective deletion',
+    weight: 12,
+    example: 'No reviews for 6 months, then reviews resume',
+    explanation: 'Gaps in review history may indicate negative review removal or listing manipulation.',
+  },
+]
+
+export const safeSignals: SafeSignal[] = [
+  {
+    name: 'verified_consistent',
+    description: 'High ratio of verified purchases with consistent content',
+    weight: -10,
+    example: '85% verified purchases with detailed, varied review content',
+  },
+  {
+    name: 'natural_distribution',
+    description: 'Rating distribution follows normal bell curve pattern',
+    weight: -8,
+    example: 'Normal distribution centered around 3.5-4 stars',
+  },
+  {
+    name: 'detailed_reviews',
+    description: 'Reviews contain specific, verifiable product details',
+    weight: -12,
+    example: 'Reviews mention specific use cases, measurements, comparisons',
+  },
+  {
+    name: 'reviewer_history',
+    description: 'Reviewers have diverse review histories across products',
+    weight: -10,
+    example: 'Most reviewers have 10+ reviews across different categories',
+  },
+  {
+    name: 'temporal_natural',
+    description: 'Reviews spread naturally over product lifecycle',
+    weight: -8,
+    example: 'Steady review flow matching sales patterns',
+  },
+  {
+    name: 'mixed_sentiment',
+    description: 'Reviews show natural mix of pros and cons',
+    weight: -10,
+    example: 'Even positive reviews mention minor drawbacks',
+  },
+  {
+    name: 'image_evidence',
+    description: 'Reviews include customer photos showing actual product use',
+    weight: -8,
+    example: 'Multiple reviews with customer-uploaded photos',
+  },
+  {
+    name: 'response_from_seller',
+    description: 'Seller responds to both positive and negative reviews',
+    weight: -5,
+    example: 'Seller has responded to 40% of reviews including negative ones',
+  },
+]
+
+export function getSuspiciousSignal(name: string): SuspiciousSignal | undefined {
+  return suspiciousSignals.find((s) => s.name === name)
 }
 
-export const reviewSignals: ReviewSignal[] = [
-  // SUSPICIOUS SIGNALS (SIG-S001 - SIG-S100)
-  { id: 'SIG-S001', name: 'Burst_Arrival', type: 'SUSPICIOUS', weight: -40, description: '50+ reviews in < 12 hours.' },
-  { id: 'SIG-S051', name: 'Unnatural_Length_Consistency', type: 'SUSPICIOUS', weight: -35, description: 'Reviews all within +/- 5 characters of each other.' },
-  { id: 'SIG-S052', name: 'Pro_Lighting_Photos', type: 'SUSPICIOUS', weight: -20, description: 'User photos have studio-grade lighting/composition.' },
-  { id: 'SIG-S053', name: 'Recursive_Author_Naming', type: 'SUSPICIOUS', weight: -30, description: 'Authors use patterns like User_001, User_002.' },
-  { id: 'SIG-S054', name: 'Zero_Negative_Noun_Density', type: 'SUSPICIOUS', weight: -25, description: '100+ reviews without a single critical noun.' },
-  { id: 'SIG-S055', name: 'Cross_Retailer_Text_Sync', type: 'SUSPICIOUS', weight: -45, description: 'Identical review text found on multiple retail sites.' },
-  { id: 'SIG-S056', name: 'Vague_Value_Superlatives', type: 'SUSPICIOUS', weight: -15, description: 'Excessive use of "good value" without specific details.' },
-  { id: 'SIG-S057', name: 'Temporal_Sentiment_Inversion', type: 'SUSPICIOUS', weight: -40, description: 'Sudden shift from 1-star to 5-star without product update.' },
-  { id: 'SIG-S058', name: 'Mention_of_Competitor_Negative', type: 'SUSPICIOUS', weight: -20, description: 'Review focuses on trashing a specific competitor brand.' },
-  { id: 'SIG-S059', name: 'Linguistic_Entropy_Floor', type: 'SUSPICIOUS', weight: -35, description: 'Text structure matches known LLM/Markov chain output patterns.' },
-  { id: 'SIG-S060', name: 'Hidden_CTA', type: 'SUSPICIOUS', weight: -50, description: 'Review body contains instructions to "Contact us for a refund."' },
+export function getSafeSignal(name: string): SafeSignal | undefined {
+  return safeSignals.find((s) => s.name === name)
+}
 
-  // SAFE SIGNALS (SIG-G001 - SIG-G060)
-  { id: 'SIG-G001', name: 'Verified_Purchase', type: 'SAFE', weight: 25, description: 'Purchase confirmed by platform.' },
-  { id: 'SIG-G031', name: 'Hardware_Revision_Mention', type: 'SAFE', weight: 25, description: 'User notes specific version or revision.' },
-  { id: 'SIG-G032', name: 'Competitor_Contrast', type: 'SAFE', weight: 20, description: 'Fair comparison with other products.' },
-  { id: 'SIG-G033', name: 'Contextual_Home_Photo', type: 'SAFE', weight: 30, description: 'Image shows product in a real-world setting.' },
-  { id: 'SIG-G034', name: 'Shipping_Honesty', type: 'SAFE', weight: 10, description: 'Mention of minor delivery or packaging issues.' },
-  { id: 'SIG-G035', name: 'Follow_Up_Usage_6Mo', type: 'SAFE', weight: 35, description: 'Updated review after 6+ months of use.' },
-
-  // HYBRID SIGNALS (SIG-H001 - SIG-H020)
-  { id: 'SIG-H001', name: 'Verified_Burst', type: 'HYBRID', weight: -10, description: 'High volume of verified reviews in 24h.' },
-  { id: 'SIG-H002', name: 'Influencer_Social_Mention', type: 'HYBRID', weight: -5, description: 'Mentions of specific social media handles.' }
-];
+export function getMaxSuspiciousWeight(): number {
+  return suspiciousSignals.reduce((max, s) => Math.max(max, s.weight), 0)
+}
