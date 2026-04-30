@@ -12,9 +12,7 @@ export async function analyzeUrl(url: string): Promise<AnalysisResult> {
   const validation = validateUrl(url)
   if (!validation.valid) {
     const result: AnalysisResult = {
-      schemaVersion: SCHEMA_VERSION,
       ok: true,
-      resultId,
       verdict: 'UNKNOWN',
       confidence: 0,
       confidenceExplanation: validation.error || 'Invalid URL.',
