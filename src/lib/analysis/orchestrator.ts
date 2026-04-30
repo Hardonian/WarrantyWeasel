@@ -3,23 +3,29 @@ import { fetchController } from '@/lib/scraper/fetchController'
 import { parseReviews } from '@/lib/parsers/reviewParser'
 import { runSignalDetection } from '@/lib/signals/signalDetector'
 import { computeScore } from '@/lib/scoring/scoreCalculator'
-import { validateUrl } from '@/lib/security/urlValidator'
+import { validateUrl, normalizeUrl } from '@/lib/security/urlValidator'
 import { MIN_REVIEWS_FOR_ANALYSIS, getFailureScenario } from '@/lib/intel'
+import { getCachedResult, setCachedResult, generateUrlHash } from './cache'
 
 const SCHEMA_VERSION = '1.0.0'
 
-function generateId(url: string): string {
-  return 'res_' + Buffer.from(url).toString('hex').slice(0, 12)
-}
+export async function analyzeUrl(urlInput: string): Promise<AnalysisResult> {
+  // Normalize URL first (canonical form, strip tracking)
+  const url = normalizeUrl(urlInput)
+  const urlHash = generateUrlHash(url)
+  const resultId = `res_${urlHash}`
 
-export async function analyzeUrl(url: string): Promise<AnalysisResult> {
-  // Validate URL first
+  // Check cache for idempotency
+  const cached = getCachedResult(urlHash)
+  if (cached) return cached
+
+  // Validate URL for security
   const validation = validateUrl(url)
   if (!validation.valid) {
-    return {
+    const result: AnalysisResult = {
       schemaVersion: SCHEMA_VERSION,
       ok: true,
-      resultId: generateId(url),
+      resultId,
       verdict: 'UNKNOWN',
       confidence: 0,
       confidenceExplanation: validation.error || 'Invalid URL.',
@@ -30,6 +36,7 @@ export async function analyzeUrl(url: string): Promise<AnalysisResult> {
       url,
       reviewCount: 0,
     }
+    return result
   }
 
   // Fetch the page
@@ -41,7 +48,7 @@ export async function analyzeUrl(url: string): Promise<AnalysisResult> {
     return {
       schemaVersion: SCHEMA_VERSION,
       ok: true,
-      resultId: generateId(url),
+      resultId,
       verdict: 'UNKNOWN',
       confidence: 0,
       confidenceExplanation: fetchResult.userMessage || 'Unable to access the review page.',
@@ -90,7 +97,7 @@ export async function analyzeUrl(url: string): Promise<AnalysisResult> {
   const result: AnalysisResult = {
     schemaVersion: SCHEMA_VERSION,
     ok: true,
-    resultId: generateId(url),
+    resultId,
     verdict: scoreResult.verdict,
     confidence: scoreResult.confidence,
     confidenceExplanation: scoreResult.confidenceExplanation,
