@@ -1,6 +1,6 @@
-import { ScrapedData, ErrorCode } from '@/types';
+import { ScrapedData } from '@/types';
 import * as cheerio from 'cheerio';
-import { getFailureByTrigger } from '../intel/failureRegistry';
+// import { getFailureByTrigger } from '../intel/failureRegistry';
 
 const USER_AGENTS = {
   desktop: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -86,7 +86,7 @@ export async function fetchWithResilience(url: string, options: FetchOptions = {
  * Basic HTML parser using Cheerio.
  * (This would be expanded with per-domain parsers in a real implementation)
  */
-function parseHtml(html: string, url: string): ScrapedData {
+function parseHtml(html: string, _url: string): ScrapedData {
   const $ = cheerio.load(html);
   
   // Skeleton parsing logic

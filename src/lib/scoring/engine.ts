@@ -1,5 +1,5 @@
 import { ScrapedData, AnalysisResult, SignalDetail, EvidenceDetail } from '@/types';
-import { suspiciousSignals, safeSignals } from '../intel/signalRegistry';
+import { suspiciousSignals } from '../intel/signalRegistry';
 import { detectCategory } from '../intel/categoryRegistry';
 
 /**

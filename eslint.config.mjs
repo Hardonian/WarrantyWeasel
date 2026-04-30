@@ -7,7 +7,11 @@ export default [
     {
         rules: {
             "no-unused-vars": "off",
-            "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }],
+            "@typescript-eslint/no-unused-vars": ["warn", { 
+                "argsIgnorePattern": "^_", 
+                "varsIgnorePattern": "^_",
+                "caughtErrorsIgnorePattern": "^_"
+            }],
             "@typescript-eslint/no-explicit-any": "off",
             "@typescript-eslint/triple-slash-reference": "off"
         }

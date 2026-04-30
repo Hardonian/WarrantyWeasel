@@ -29,7 +29,7 @@ export function normalizeUrl(input: string): string {
     }
 
     return url.toString();
-  } catch (e) {
+  } catch (_e) {
     return input;
   }
 }
@@ -71,7 +71,7 @@ export function validateUrl(input: string): { valid: boolean; error?: string } {
     }
 
     return { valid: true };
-  } catch (e) {
+  } catch (_e) {
     return { valid: false, error: 'INVALID_URL_FORMAT' };
   }
 }
