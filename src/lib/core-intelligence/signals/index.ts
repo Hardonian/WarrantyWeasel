@@ -1,16 +1,220 @@
-import type { ParsedReview, SignalResult, SignalEvidence } from '@/types'
-import { getSuspiciousSignal, getSafeSignal } from '@/lib/intel'
+import type { SuspiciousSignal, SafeSignal, SignalResult, ParsedReview, SignalEvidence } from '../types'
 
-interface SignalDetector {
-  name: string
-  detect: (reviews: ParsedReview[], metadata: Record<string, unknown>) => SignalResult | null
+export const suspiciousSignals: Record<string, SuspiciousSignal> = {
+  temporal_sync: {
+    name: 'temporal_sync',
+    description: 'Multiple reviews posted within a narrow time window',
+    weight: 15,
+    example: '47 reviews posted within 48 hours',
+    explanation: 'Organic review patterns typically show natural distribution over time. Clustering suggests coordinated posting.',
+  },
+  burst_pattern: {
+    name: 'burst_pattern',
+    description: 'Sudden spike in review volume inconsistent with product lifecycle',
+    weight: 12,
+    example: '200 reviews in one week after months of 2-3 per week',
+    explanation: 'Review bursts often indicate campaigns, incentives, or manipulation events.',
+  },
+  linguistic_mirror: {
+    name: 'linguistic_mirror',
+    description: 'Multiple reviews share unusual phrasing or sentence structure',
+    weight: 18,
+    example: 'Three reviews use identical uncommon phrases',
+    explanation: 'Independent reviewers rarely use identical phrasing. Shared language suggests common authorship or templates.',
+  },
+  sentiment_mismatch: {
+    name: 'sentiment_mismatch',
+    description: 'Review text sentiment contradicts the star rating given',
+    weight: 10,
+    example: '5-star review with text describing multiple product failures',
+    explanation: 'Mismatch between rating and text content suggests the rating may not reflect genuine experience.',
+  },
+  keyword_spam: {
+    name: 'keyword_spam',
+    description: 'Reviews contain unnatural repetition of product/brand keywords',
+    weight: 14,
+    example: '"This XYZ Brand XYZ Product is the best XYZ Product from XYZ Brand"',
+    explanation: 'Keyword stuffing is a common manipulation technique to boost search visibility.',
+  },
+  anonymity_ratio: {
+    name: 'anonymity_ratio',
+    description: 'High proportion of reviews from anonymous or single-review accounts',
+    weight: 12,
+    example: '78% of reviewers have only posted this one review',
+    explanation: 'Legitimate reviewers typically have a history. High anonymity suggests incentivized or fake reviews.',
+  },
+  helpful_vote_anomaly: {
+    name: 'helpful_vote_anomaly',
+    description: 'Helpful votes correlate suspiciously with positive ratings',
+    weight: 10,
+    example: 'All 5-star reviews have 50+ helpful votes, all 1-star have 0-2',
+    explanation: 'Natural helpful vote distribution should not perfectly align with rating polarity.',
+  },
+  category_drift: {
+    name: 'category_drift',
+    description: 'Reviews discuss features inconsistent with the product category',
+    weight: 16,
+    example: 'Electronics reviews discussing fabric quality',
+    explanation: 'Reviews for the wrong product indicate listing manipulation or review hijacking.',
+  },
+  geo_impossible: {
+    name: 'geo_impossible',
+    description: 'Reviewer locations inconsistent with product availability',
+    weight: 11,
+    example: 'Product only sold in US, but 60% of reviews from non-US locations',
+    explanation: 'Geographic mismatch suggests reviews may not be for this specific product listing.',
+  },
+  honeypot_hidden: {
+    name: 'honeypot_hidden',
+    description: 'Hidden review content detected in page DOM',
+    weight: 20,
+    example: 'Reviews in display:none containers not visible to users',
+    explanation: 'Hidden content may be injected to manipulate automated analysis while remaining invisible to users.',
+  },
+  rating_polarization: {
+    name: 'rating_polarization',
+    description: 'Bimodal rating distribution with few middle ratings',
+    weight: 13,
+    example: '70% 5-star, 25% 1-star, 5% everything else',
+    explanation: 'Natural products typically show normal distribution. Polarization suggests manipulation on both sides.',
+  },
+  incentive_disclosure: {
+    name: 'incentive_disclosure',
+    description: 'Reviews mention receiving product at discount or for free',
+    weight: 14,
+    example: '"I received this product at a discount in exchange for my honest review"',
+    explanation: 'Incentivized reviews tend to be more positive and may not reflect typical customer experience.',
+  },
+  ai_generated_pattern: {
+    name: 'ai_generated_pattern',
+    description: 'Review text shows patterns consistent with AI generation',
+    weight: 17,
+    example: 'Overly structured paragraphs, generic praise, lack of specific detail',
+    explanation: 'AI-generated reviews lack authentic experience markers and often follow predictable patterns.',
+  },
+  verified_inconsistency: {
+    name: 'verified_inconsistency',
+    description: 'Verified purchase badges present but content contradicts actual purchase',
+    weight: 16,
+    example: '"Verified Purchase" badge on review that describes never receiving the product',
+    explanation: 'Badge systems can be gamed. Content that contradicts purchase suggests badge manipulation.',
+  },
+  review_hijacking: {
+    name: 'review_hijacking',
+    description: 'Reviews appear to be for a different product than currently listed',
+    weight: 22,
+    example: 'Product is a phone case but reviews discuss a phone charger',
+    explanation: 'Listing hijacking repurposes old reviews for new products, making reviews irrelevant to current offering.',
+  },
+  safety_concern: {
+    name: 'safety_concern',
+    description: 'Reviews mention safety hazards, injuries, or recalls',
+    weight: 25,
+    example: '"This overheated and caught fire"',
+    explanation: 'Safety concerns in reviews are high-signal indicators that warrant immediate attention regardless of overall rating.',
+  },
+  warranty_complaint: {
+    name: 'warranty_complaint',
+    description: 'Reviews mention warranty denial or voided coverage',
+    weight: 15,
+    example: '"Warranty claim denied because of fine print"',
+    explanation: 'Warranty issues mentioned in reviews may reveal gaps not disclosed in the product listing.',
+  },
+  counterfeit_signal: {
+    name: 'counterfeit_signal',
+    description: 'Reviews suggest product may be counterfeit or different from description',
+    weight: 20,
+    example: '"Packaging looked different from official product, quality is poor"',
+    explanation: 'Counterfeit concerns in reviews suggest the listing may not represent the genuine product.',
+  },
+  subscription_trap: {
+    name: 'subscription_trap',
+    description: 'Reviews mention unexpected recurring charges or subscription terms',
+    weight: 18,
+    example: '"Was charged monthly after free trial, hard to cancel"',
+    explanation: 'Subscription traps are a common consumer complaint that may not be clear from the product listing.',
+  },
+  review_gap: {
+    name: 'review_gap',
+    description: 'Significant gaps in review timeline suggesting selective deletion',
+    weight: 12,
+    example: 'No reviews for 6 months, then reviews resume',
+    explanation: 'Gaps in review history may indicate negative review removal or listing manipulation.',
+  },
+}
+
+export const safeSignals: Record<string, SafeSignal> = {
+  verified_consistent: {
+    name: 'verified_consistent',
+    description: 'High ratio of verified purchases with consistent content',
+    weight: -10,
+    example: '85% verified purchases with detailed, varied review content',
+  },
+  natural_distribution: {
+    name: 'natural_distribution',
+    description: 'Rating distribution follows normal bell curve pattern',
+    weight: -8,
+    example: 'Normal distribution centered around 3.5-4 stars',
+  },
+  detailed_reviews: {
+    name: 'detailed_reviews',
+    description: 'Reviews contain specific, verifiable product details',
+    weight: -12,
+    example: 'Reviews mention specific use cases, measurements, comparisons',
+  },
+  reviewer_history: {
+    name: 'reviewer_history',
+    description: 'Reviewers have diverse review histories across products',
+    weight: -10,
+    example: 'Most reviewers have 10+ reviews across different categories',
+  },
+  temporal_natural: {
+    name: 'temporal_natural',
+    description: 'Reviews spread naturally over product lifecycle',
+    weight: -8,
+    example: 'Steady review flow matching sales patterns',
+  },
+  mixed_sentiment: {
+    name: 'mixed_sentiment',
+    description: 'Reviews show natural mix of pros and cons',
+    weight: -10,
+    example: 'Even positive reviews mention minor drawbacks',
+  },
+  image_evidence: {
+    name: 'image_evidence',
+    description: 'Reviews include customer photos showing actual product use',
+    weight: -8,
+    example: 'Multiple reviews with customer-uploaded photos',
+  },
+  response_from_seller: {
+    name: 'response_from_seller',
+    description: 'Seller responds to both positive and negative reviews',
+    weight: -5,
+    example: 'Seller has responded to 40% of reviews including negative ones',
+  },
+}
+
+export function getSuspiciousSignal(name: string): SuspiciousSignal | undefined {
+  return suspiciousSignals[name]
+}
+
+export function getSafeSignal(name: string): SafeSignal | undefined {
+  return safeSignals[name]
+}
+
+export function getMaxSuspiciousWeight(): number {
+  return Math.max(...Object.values(suspiciousSignals).map((s) => s.weight), 0)
 }
 
 function makeEvidence(signal: string, snippet: string, source: string): SignalEvidence {
   return { source, snippet: snippet.slice(0, 200) }
 }
 
-// Detect temporal clustering - many reviews in short time window
+export interface SignalDetector {
+  name: string
+  detect: (reviews: ParsedReview[], metadata: Record<string, unknown>) => SignalResult | null
+}
+
 function detectTemporalSync(reviews: ParsedReview[]): SignalResult | null {
   const datedReviews = reviews.filter((r) => r.date)
   if (datedReviews.length < 3) return null
@@ -46,7 +250,6 @@ function detectTemporalSync(reviews: ParsedReview[]): SignalResult | null {
   return null
 }
 
-// Detect duplicate or near-duplicate review text
 function detectLinguisticMirror(reviews: ParsedReview[]): SignalResult | null {
   const snippets = reviews.map((r) => r.snippet.toLowerCase().trim())
   const duplicates: string[] = []
@@ -76,7 +279,6 @@ function detectLinguisticMirror(reviews: ParsedReview[]): SignalResult | null {
   return null
 }
 
-// Detect sentiment mismatch (rating vs text)
 function detectSentimentMismatch(reviews: ParsedReview[]): SignalResult | null {
   const mismatches: { rating: number; snippet: string }[] = []
 
@@ -112,7 +314,6 @@ function detectSentimentMismatch(reviews: ParsedReview[]): SignalResult | null {
   return null
 }
 
-// Detect keyword stuffing
 function detectKeywordSpam(reviews: ParsedReview[]): SignalResult | null {
   const stuffed: string[] = []
 
@@ -151,7 +352,6 @@ function detectKeywordSpam(reviews: ParsedReview[]): SignalResult | null {
   return null
 }
 
-// Detect anonymity ratio
 function detectAnonymityRatio(reviews: ParsedReview[]): SignalResult | null {
   if (reviews.length < 5) return null
 
@@ -176,7 +376,6 @@ function detectAnonymityRatio(reviews: ParsedReview[]): SignalResult | null {
   return null
 }
 
-// Detect rating polarization (bimodal distribution)
 function detectRatingPolarization(reviews: ParsedReview[]): SignalResult | null {
   const ratedReviews = reviews.filter((r) => r.rating > 0)
   if (ratedReviews.length < 10) return null
@@ -202,7 +401,6 @@ function detectRatingPolarization(reviews: ParsedReview[]): SignalResult | null 
   return null
 }
 
-// Detect incentive disclosures
 function detectIncentiveDisclosure(reviews: ParsedReview[]): SignalResult | null {
   const incentiveKeywords = [
     'free product', 'free sample', 'discount', 'in exchange for',
@@ -236,7 +434,6 @@ function detectIncentiveDisclosure(reviews: ParsedReview[]): SignalResult | null
   return null
 }
 
-// Detect safety concerns
 function detectSafetyConcerns(reviews: ParsedReview[]): SignalResult | null {
   const safetyKeywords = [
     'fire', 'burn', 'shock', 'injury', 'hurt', 'danger', 'hazard',
@@ -271,7 +468,6 @@ function detectSafetyConcerns(reviews: ParsedReview[]): SignalResult | null {
   return null
 }
 
-// Detect warranty complaints
 function detectWarrantyComplaints(reviews: ParsedReview[]): SignalResult | null {
   const warrantyKeywords = [
     'warranty denied', 'warranty void', 'warranty claim', 'guarantee denied',
@@ -305,7 +501,6 @@ function detectWarrantyComplaints(reviews: ParsedReview[]): SignalResult | null 
   return null
 }
 
-// Detect counterfeit signals
 function detectCounterfeitSignals(reviews: ParsedReview[]): SignalResult | null {
   const counterfeitKeywords = [
     'fake', 'counterfeit', 'knockoff', 'knock-off', 'replica',
@@ -339,7 +534,6 @@ function detectCounterfeitSignals(reviews: ParsedReview[]): SignalResult | null 
   return null
 }
 
-// Detect subscription trap mentions
 function detectSubscriptionTrap(reviews: ParsedReview[]): SignalResult | null {
   const subscriptionKeywords = [
     'subscription', 'recurring charge', 'monthly charge', 'auto renew',
@@ -373,7 +567,6 @@ function detectSubscriptionTrap(reviews: ParsedReview[]): SignalResult | null {
   return null
 }
 
-// Detect verified purchase ratio
 function detectVerifiedRatio(reviews: ParsedReview[]): SignalResult | null {
   if (reviews.length < 5) return null
 
@@ -395,7 +588,6 @@ function detectVerifiedRatio(reviews: ParsedReview[]): SignalResult | null {
   return null
 }
 
-// Detect AI-generated patterns
 function detectAIGeneratedPattern(reviews: ParsedReview[]): SignalResult | null {
   const aiIndicators = [
     /\b(in conclusion|overall|i would recommend|to summarize|all in all)\b/i,
@@ -433,7 +625,6 @@ function detectAIGeneratedPattern(reviews: ParsedReview[]): SignalResult | null 
   return null
 }
 
-// Safe signal detectors
 function detectDetailedReviews(reviews: ParsedReview[]): SignalResult | null {
   if (reviews.length < 5) return null
 
@@ -445,7 +636,7 @@ function detectDetailedReviews(reviews: ParsedReview[]): SignalResult | null {
     if (!safeSignal) return null
     return {
       name: 'detailed_reviews',
-      weight: safeSignal.weight, // weight is already negative in registry
+      weight: safeSignal.weight,
       evidence: [makeEvidence('detailed_reviews', `${detailedCount}/${reviews.length} reviews are detailed (>200 chars)`, 'content analysis')],
       explanation: `${Math.round(ratio * 100)}% of reviews contain detailed content, suggesting authentic experiences.`,
       strength: 'strong',
@@ -462,13 +653,12 @@ function detectNaturalDistribution(reviews: ParsedReview[]): SignalResult | null
   const ratings = ratedReviews.map((r) => r.rating)
   const uniqueRatings = new Set(ratings).size
 
-  // Natural products typically have at least 3 different rating values
   if (uniqueRatings >= 4) {
     const safeSignal = getSafeSignal('natural_distribution')
     if (!safeSignal) return null
     return {
       name: 'natural_distribution',
-      weight: safeSignal.weight, // weight is already negative
+      weight: safeSignal.weight,
       evidence: [makeEvidence('natural_distribution', `${uniqueRatings} different rating values present`, 'rating distribution')],
       explanation: `Reviews show ${uniqueRatings} different rating levels, suggesting organic feedback.`,
       strength: 'weak',
@@ -498,7 +688,7 @@ export const signalDetectors: SignalDetector[] = [
 
 export function runSignalDetection(
   reviews: ParsedReview[],
-  metadata: Record<string, unknown>,
+  metadata: Record<string, unknown> = {},
 ): SignalResult[] {
   const results: SignalResult[] = []
 
@@ -509,10 +699,44 @@ export function runSignalDetection(
         results.push(result)
       }
     } catch {
-      // Detector failed silently - don't crash the analysis
       continue
     }
   }
 
   return results
+}
+
+export function aggregateSignals(signals: SignalResult[]): {
+  totalWeight: number
+  strongCount: number
+  weakCount: number
+  conflictingCount: number
+  suspiciousWeight: number
+  safeWeight: number
+} {
+  let totalWeight = 0
+  let strongCount = 0
+  let weakCount = 0
+  let conflictingCount = 0
+  let suspiciousWeight = 0
+  let safeWeight = 0
+
+  for (const signal of signals) {
+    totalWeight += signal.weight
+    if (signal.strength === 'strong') strongCount++
+    else if (signal.strength === 'weak') weakCount++
+    else if (signal.strength === 'conflicting') conflictingCount++
+
+    if (signal.weight > 0) suspiciousWeight += signal.weight
+    else safeWeight += Math.abs(signal.weight)
+  }
+
+  return {
+    totalWeight,
+    strongCount,
+    weakCount,
+    conflictingCount,
+    suspiciousWeight,
+    safeWeight,
+  }
 }
