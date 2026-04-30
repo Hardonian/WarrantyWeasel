@@ -1,5 +1,5 @@
 import type { ParsedReview, SignalResult, SignalEvidence } from '@/types'
-import { getSuspiciousSignal, getSafeSignal } from '@/lib/intel'
+import { suspiciousSignals, safeSignals, getSuspiciousSignal, getSafeSignal } from '@/lib/intel'
 
 interface SignalDetector {
   name: string

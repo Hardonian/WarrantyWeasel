@@ -141,25 +141,25 @@ export function detectCategory(productName: string, metadata: Record<string, unk
   const description = String(metadata.description || '').toLowerCase()
   const combined = `${name} ${description}`
 
-  if (/\b(phone|laptop|tablet|headphone|speaker|camera|tv|monitor|charger|cable|battery|usb|bluetooth|wireless|electronics?)\b/.test(combined)) {
+  if (/\b(phone|laptop|tablet|headphones?|speakers?|cameras?|tv|monitor|charger|cables?|batter(?:y|ies)|usb|bluetooth|wireless|electronics?)\b/i.test(combined)) {
     return 'electronics'
   }
-  if (/\b(drill|saw|hammer|wrench|tool|sander|grinder|driver|pliers|socket)\b/.test(combined)) {
+  if (/\b(drill|saw|hammer|wrench|tools?|sander|grinder|driver|pliers|socket)\b/i.test(combined)) {
     return 'tools'
   }
-  if (/\b(shirts?|pants?|dress|shoes?|jackets?|coat|hat|sock|apparel|clothing|fashion|wear)\b/.test(combined)) {
+  if (/\b(shirts?|pants?|dress|shoes?|jackets?|coats?|hats?|socks?|apparel|clothing|fashion|wear)\b/i.test(combined)) {
     return 'apparel'
   }
-  if (/\b(furniture|lamp|curtain|rug|pillow|blanket|decor|kitchen|cookware|appliance)\b/.test(combined)) {
+  if (/\b(furniture|lamps?|curtains?|rugs?|pillows?|blankets?|decor|kitchen|cookware|appliances?)\b/i.test(combined)) {
     return 'home_goods'
   }
-  if (/\b(software|app|subscription|game|download|digital|ebook|course|streaming)\b/.test(combined)) {
+  if (/\b(software|apps?|subscription|games?|downloads?|digital|ebooks?|courses?|streaming)\b/i.test(combined)) {
     return 'digital'
   }
-  if (/\b(vitamin|supplement|protein|pill|capsule|powder|herb|organic|health)\b/.test(combined)) {
+  if (/\b(vitamins?|supplements?|protein|pills?|capsules?|powders?|herbs?|organic|health)\b/i.test(combined)) {
     return 'food_supplement'
   }
-  if (/\b(car|auto|vehicle|tire|oil|brake|filter|motor|engine|automotive)\b/.test(combined)) {
+  if (/\b(car|auto|vehicles?|tires?|oil|brakes?|filters?|motors?|engines?|automotive)\b/i.test(combined)) {
     return 'automotive'
   }
   return 'general'
