@@ -2,6 +2,7 @@
 
 import { useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
+import Link from 'next/link'
 import type { AnalysisResult } from '@/types'
 import VerdictBadge from '@/components/VerdictBadge'
 import SignalList from '@/components/SignalList'
@@ -16,9 +17,9 @@ function ResultContent() {
     return (
       <div className="mx-auto max-w-3xl px-4 py-12 text-center">
         <p className="text-gray-600">No analysis data found.</p>
-        <a href="/" className="mt-4 inline-block text-blue-600 hover:underline">
+        <Link href="/" className="mt-4 inline-block text-blue-600 hover:underline">
           Go back to analyzer
-        </a>
+        </Link>
       </div>
     )
   }
@@ -30,9 +31,9 @@ function ResultContent() {
     return (
       <div className="mx-auto max-w-3xl px-4 py-12 text-center">
         <p className="text-gray-600">Invalid analysis data.</p>
-        <a href="/" className="mt-4 inline-block text-blue-600 hover:underline">
+        <Link href="/" className="mt-4 inline-block text-blue-600 hover:underline">
           Go back to analyzer
-        </a>
+        </Link>
       </div>
     )
   }
@@ -115,12 +116,12 @@ function ResultContent() {
         >
           Share Result
         </button>
-        <a
+        <Link
           href="/"
           className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
         >
           Analyze Another
-        </a>
+        </Link>
       </div>
     </div>
   )
