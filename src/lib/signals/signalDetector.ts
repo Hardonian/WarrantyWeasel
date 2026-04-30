@@ -1,5 +1,5 @@
 import type { ParsedReview, SignalResult, SignalEvidence } from '@/types'
-import { suspiciousSignals, getSuspiciousSignal } from '@/lib/intel'
+import { suspiciousSignals, getSuspiciousSignal, getSafeSignal } from '@/lib/intel'
 
 interface SignalDetector {
   name: string
@@ -441,11 +441,11 @@ function detectDetailedReviews(reviews: ParsedReview[]): SignalResult | null {
   const ratio = detailedCount / reviews.length
 
   if (ratio > 0.6) {
-    const safeSignal = suspiciousSignals.find((s) => s.name === 'detailed_reviews')
+    const safeSignal = getSafeSignal('detailed_reviews')
     if (!safeSignal) return null
     return {
       name: 'detailed_reviews',
-      weight: -safeSignal.weight,
+      weight: safeSignal.weight, // weight is already negative in registry
       evidence: [makeEvidence('detailed_reviews', `${detailedCount}/${reviews.length} reviews are detailed (>200 chars)`, 'content analysis')],
       explanation: `${Math.round(ratio * 100)}% of reviews contain detailed content, suggesting authentic experiences.`,
       strength: 'strong',
@@ -464,11 +464,11 @@ function detectNaturalDistribution(reviews: ParsedReview[]): SignalResult | null
 
   // Natural products typically have at least 3 different rating values
   if (uniqueRatings >= 4) {
-    const safeSignal = suspiciousSignals.find((s) => s.name === 'natural_distribution')
+    const safeSignal = getSafeSignal('natural_distribution')
     if (!safeSignal) return null
     return {
       name: 'natural_distribution',
-      weight: -safeSignal.weight,
+      weight: safeSignal.weight, // weight is already negative
       evidence: [makeEvidence('natural_distribution', `${uniqueRatings} different rating values present`, 'rating distribution')],
       explanation: `Reviews show ${uniqueRatings} different rating levels, suggesting organic feedback.`,
       strength: 'weak',
