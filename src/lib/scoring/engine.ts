@@ -22,7 +22,7 @@ export function analyzeProduct(data: ScrapedData): AnalysisResult {
   let rawScore = 50; // Neutral baseline
   let confidence = 85; // Initial high confidence
   
-  const category = data.category || detectCategory(data.title || '');
+  const category = data.category || detectCategory(data.title || '', {});
 
   // 1. Process Detected Signals (Simplified for this version)
   // In a real app, this would be based on sophisticated pattern matching

@@ -48,6 +48,50 @@ export interface AnalysisResult {
   degraded?: boolean;
   errorCode?: ErrorCode;
 }
+export interface CategoryRule {
+  category: string;
+  adjustments: Record<string, number>;
+  description: string;
+}
+
+export interface EdgeCase {
+  id: string;
+  description: string;
+  handling: string;
+}
+
+export interface ParsedReview {
+  id: string;
+  title: string;
+  rating: number;
+  date: string | null;
+  author: string;
+  verified: boolean;
+  snippet: string;
+  helpfulVotes: number;
+  rawHtml: string;
+}
+
+export interface ParsedData {
+  reviews: ParsedReview[];
+  productName: string | null;
+  averageRating: number | null;
+  totalReviews: number | null;
+  category: string | null;
+  metadata: Record<string, unknown>;
+}
+
+export interface FetchResult {
+  success: boolean;
+  html: string | null;
+  status: number;
+  strategy: string;
+  degraded: boolean;
+  userMessage: string;
+  confidencePenalty: number;
+  failureId: string | null;
+}
+
 export interface FailureScenario {
   id: string;
   scenario: string;
