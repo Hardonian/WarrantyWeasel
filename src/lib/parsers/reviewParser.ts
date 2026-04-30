@@ -97,7 +97,7 @@ function extractReviewsFromDOM(html: string): ParsedReview[] {
   return reviews
 }
 
-function extractReviewFromElement($el: cheerio.Cheerio, index: number): ParsedReview | null {
+function extractReviewFromElement($el: cheerio.Cheerio<any>, index: number): ParsedReview | null {
   const text = $el.text().trim()
   if (!text || text.length < 10) return null
 
@@ -190,10 +190,10 @@ export function parseReviews(html: string): ParsedData {
     const reviews = extractReviewsFromDOM(html)
     return {
       reviews,
-      productName: jsonLdData.productName,
-      averageRating: jsonLdData.averageRating,
-      totalReviews: jsonLdData.totalReviews,
-      category: jsonLdData.metadata?.category as string | null || detectCategoryFromDOM(html),
+      productName: jsonLdData.productName ?? null,
+      averageRating: jsonLdData.averageRating ?? null,
+      totalReviews: jsonLdData.totalReviews ?? null,
+      category: (jsonLdData.metadata?.category as string | null) || detectCategoryFromDOM(html),
       metadata: jsonLdData.metadata || {},
     }
   }

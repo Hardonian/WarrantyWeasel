@@ -34,11 +34,36 @@ export type ErrorCode =
   | 'RATE_LIMITED'
   | 'UNKNOWN_ERROR';
 
+export type Verdict = 'BUY' | 'CAUTION' | 'AVOID' | 'UNKNOWN';
+
+export interface SignalEvidence {
+  source: string;
+  snippet: string;
+}
+
+export interface SignalResult {
+  name: string;
+  weight: number;
+  explanation: string;
+  strength: 'strong' | 'weak' | 'conflicting';
+  evidence?: SignalEvidence[];
+}
+
+export interface ScoreResult {
+  score: number;
+  verdict: Verdict;
+  confidence: number;
+  confidenceExplanation: string;
+  signals: SignalResult[];
+  limitations: string[];
+}
+
 export interface AnalysisResult {
   schemaVersion: string;
   ok: boolean;
   resultId: string;
-  verdict: 'BUY' | 'CAUTION' | 'AVOID' | 'UNKNOWN';
+  url: string;
+  verdict: Verdict;
   confidence: number;
   confidenceExplanation: string;
   reasons: string[];
