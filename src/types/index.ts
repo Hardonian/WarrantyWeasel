@@ -25,7 +25,19 @@ export interface EvidenceDetail {
   source: string;
 }
 
+export type ErrorCode = 
+  | 'UNSUPPORTED_DOMAIN' 
+  | 'INVALID_URL' 
+  | 'FETCH_BLOCKED' 
+  | 'PARTIAL_PARSE' 
+  | 'TIMEOUT' 
+  | 'RATE_LIMITED'
+  | 'UNKNOWN_ERROR';
+
 export interface AnalysisResult {
+  schemaVersion: string;
+  ok: boolean;
+  resultId: string;
   verdict: 'BUY' | 'CAUTION' | 'AVOID' | 'UNKNOWN';
   confidence: number;
   confidenceExplanation: string;
@@ -33,4 +45,7 @@ export interface AnalysisResult {
   signals: SignalDetail[];
   evidence: EvidenceDetail[];
   limitations: string[];
+  degraded?: boolean;
+  errorCode?: ErrorCode;
 }
+
