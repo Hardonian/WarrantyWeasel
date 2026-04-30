@@ -1,9 +1,10 @@
-import { NextResponse } from 'next/server';
+import { NextResponse } from 'next/server'
 
 export async function GET() {
   return NextResponse.json({
-    status: 'UP',
-    version: '1.0.0',
+    ok: true,
+    status: 'healthy',
     timestamp: new Date().toISOString(),
-  });
+    version: '0.1.0',
+  })
 }

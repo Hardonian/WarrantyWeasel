@@ -1,31 +1,30 @@
-import './globals.css';
-import type { Metadata } from 'next';
+import type { Metadata } from 'next'
+import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'ReviewGhost | Sneak Past the Fine Print',
-  description: 'Deterministic product analysis for the skeptical buyer.',
-};
+  title: 'ReviewGhost - See Through Fake Reviews',
+  description: 'Analyze product reviews for suspicious patterns. Make informed purchasing decisions.',
+}
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
   return (
     <html lang="en">
-      <body>
-        <nav className="container" style={{ padding: '2rem 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ fontWeight: 800, fontSize: '1.5rem', color: 'var(--primary)' }}>ReviewGhost</div>
-          <div style={{ display: 'flex', gap: '2rem' }}>
-            <a href="/privacy" style={{ color: 'var(--neutral)', textDecoration: 'none' }}>Privacy</a>
-            <a href="/terms" style={{ color: 'var(--neutral)', textDecoration: 'none' }}>Terms</a>
+      <body className="min-h-screen bg-gray-50">
+        <header className="border-b bg-white">
+          <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
+            <h1 className="text-xl font-bold">ReviewGhost</h1>
+            <span className="text-sm text-gray-500">See through fake reviews</span>
           </div>
-        </nav>
+        </header>
         <main>{children}</main>
-        <footer className="container" style={{ padding: '4rem 0', textAlign: 'center', color: 'var(--neutral)', fontSize: '0.875rem' }}>
-          <p>© 2026 ReviewGhost. Policy signals only; not a guarantee; verify before purchase.</p>
+        <footer className="border-t bg-white py-6 text-center text-sm text-gray-500">
+          ReviewGhost analyzes publicly available review data. Results are informational only.
         </footer>
       </body>
     </html>
-  );
+  )
 }
