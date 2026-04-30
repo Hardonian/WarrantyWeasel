@@ -3,21 +3,10 @@ import { fetchController } from '@/lib/scraper/fetchController'
 import { parseReviews } from '@/lib/parsers/reviewParser'
 import { runSignalDetection } from '@/lib/signals/signalDetector'
 import { computeScore } from '@/lib/scoring/scoreCalculator'
-import { validateUrl, normalizeUrl } from '@/lib/security/urlValidator'
+import { validateUrl } from '@/lib/security/urlValidator'
 import { MIN_REVIEWS_FOR_ANALYSIS, getFailureScenario } from '@/lib/intel'
-import { getCachedResult, generateUrlHash } from './cache'
 
-const SCHEMA_VERSION = '1.0.0'
-
-export async function analyzeUrl(urlInput: string): Promise<AnalysisResult> {
-  // Normalize URL first (canonical form, strip tracking)
-  const url = normalizeUrl(urlInput)
-  const urlHash = generateUrlHash(url)
-  const resultId = `res_${urlHash}`
-
-  // Check cache for idempotency
-  const cached = getCachedResult(urlHash)
-  if (cached) return cached
+export async function analyzeUrl(url: string): Promise<AnalysisResult> {
 
   // Validate URL for security
   const validation = validateUrl(url)
