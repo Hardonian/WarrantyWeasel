@@ -1,0 +1,17 @@
+{
+  "name": "@warrantyweasel/shared-intelligence",
+  "version": "0.1.0",
+  "private": true,
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "dependencies": {
+    "@warrantyweasel/shared-core": "file:../shared-core"
+  },
+  "scripts": {
+    "build": "tsc --noEmit",
+    "test": "echo \"shared-intelligence tests run via workspace root\""
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0"
+  }
+}

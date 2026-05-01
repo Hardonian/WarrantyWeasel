@@ -1,16 +1,21 @@
 {
-  "name": "reviewghost",
+  "name": "warrantyweasel-workspace",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "npm run build:packages && next build",
+    "build:packages": "npm run build --workspace=packages/shared-core --workspace=packages/shared-intelligence --workspace=packages/shared-diagnostics --workspace=packages/shared-cost-control --workspace=packages/shared-infra",
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "verify": "npm run lint && npm run typecheck && npm run test && npm run build"
   },
+  "workspaces": [
+    "packages/*"
+  ],
   "dependencies": {
     "cheerio": "^1.0.0",
     "next": "^15.2.0",
