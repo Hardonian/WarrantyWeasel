@@ -183,7 +183,7 @@ export function amazonParse(html: string): ParsedData {
 
     const $el = $(el)
 
-    const ratingStr = $el.find('[data-hook="review-star-rating"] span, [data-hook="cmps-review-star-rating"] span').attr('class') || ''
+    const ratingStr = $el.find('[data-hook="review-star-rating"], [data-hook="cmps-review-star-rating"]').attr('class') || ''
     const starMatch = ratingStr.match(/a-star-(\d)/)
     const rating = starMatch ? parseInt(starMatch[1], 10) : 0
 
