@@ -50,6 +50,7 @@ function detectTemporalSync(reviews: ParsedReview[]): SignalResult | null {
 function detectLinguisticMirror(reviews: ParsedReview[]): SignalResult | null {
   const snippetCounts = new Map<string, number>()
   const duplicates: string[] = []
+  const seen = new Set<string>()
 
   for (const review of reviews) {
     const snippet = review.snippet.toLowerCase().trim()

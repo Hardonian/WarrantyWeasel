@@ -15,7 +15,7 @@ import {
 } from '@/lib/intel'
 import { sleep } from '@/lib/security/urlValidator'
 
-function detectFailureType(html: string, status: number): string | null {
+export function detectFailureType(html: string, status: number): string | null {
   const lowerHtml = html.toLowerCase()
 
   if (status === 429) return 'FS-01'
