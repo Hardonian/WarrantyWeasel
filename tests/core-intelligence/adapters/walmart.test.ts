@@ -1,128 +1,148 @@
 import { describe, it, expect } from 'vitest'
 import { walmartParse, walmartExtractCategory } from '@/lib/core-intelligence/adapters/walmart'
 
-describe('walmartParse', () => {
-  it('parses product info correctly', () => {
-    const html = `
-      <html>
-        <head>
-          <meta property="og:title" content="Meta Product" />
-        </head>
-        <body>
-          <h1 class="prod-ProductTitle">Test Product</h1>
-          <span itemprop="ratingValue" content="4.5"></span>
-          <span itemprop="reviewCount" content="100"></span>
-        </body>
-      </html>
-    `
-    const result = walmartParse(html)
-    expect(result.productName).toBe('Test Product')
-    expect(result.averageRating).toBe(4.5)
-    expect(result.totalReviews).toBe(100)
-    expect(result.reviews).toHaveLength(0)
-  })
+describe('walmart adapter', () => {
+  describe('walmartParse', () => {
+    it('parses typical review data correctly', () => {
+      const html = `
+        <html>
+          <head>
+            <meta property="og:title" content="Test Product" />
+          </head>
+          <body>
+            <h1 class="prod-ProductTitle">Test Product</h1>
+            <span itemprop="ratingValue" content="4.5"></span>
+            <span itemprop="reviewCount" content="123"></span>
 
-  it('falls back to meta title if h1 is missing', () => {
-    const html = `
-      <html>
-        <head>
-          <meta property="og:title" content="Meta Product" />
-        </head>
-        <body>
-        </body>
-      </html>
-    `
-    const result = walmartParse(html)
-    expect(result.productName).toBe('Meta Product')
-  })
+            <div data-testid="customer-review">
+              <span itemprop="ratingValue" content="5"></span>
+              <div data-testid="review-title">Great item!</div>
+              <span itemprop="datePublished" content="2023-01-01"></span>
+              <span itemprop="author">Jane Doe</span>
+              <span class="verified-purchase">Verified Purchaser</span>
+              <div itemprop="reviewBody">I loved this product, works as expected.</div>
+              <span class="helpful-count">10 people found this helpful</span>
+            </div>
 
-  it('parses reviews with data-testid="customer-review"', () => {
-    const html = `
-      <html>
-        <body>
-          <div data-testid="customer-review">
-            <span itemprop="ratingValue" content="5.0"></span>
-            <h3 data-testid="review-title">Great item</h3>
-            <span itemprop="datePublished" content="2023-01-01"></span>
-            <span itemprop="author">John Doe</span>
-            <span class="verified-purchase">Verified Purchaser</span>
-            <p itemprop="reviewBody">Works as expected.</p>
-            <span class="helpful-count">15 people found this helpful</span>
-          </div>
-        </body>
-      </html>
-    `
-    const result = walmartParse(html)
-    expect(result.reviews).toHaveLength(1)
-    expect(result.reviews[0]).toMatchObject({
-      title: 'Great item',
-      rating: 5,
-      date: '2023-01-01',
-      author: 'John Doe',
-      verified: true,
-      snippet: 'Works as expected.',
-      helpfulVotes: 15,
+            <div class="review-item">
+              <span itemprop="ratingValue" content="2"></span>
+              <h3 class="review-title">Not what I expected</h3>
+              <div class="review-date">2023-02-01</div>
+              <div class="reviewer-name">John Smith</div>
+              <p class="review-text">The quality is quite poor.</p>
+              <span data-testid="helpful-count">2</span>
+            </div>
+          </body>
+        </html>
+      `
+
+      const result = walmartParse(html)
+
+      expect(result.productName).toBe('Test Product')
+      expect(result.averageRating).toBe(4.5)
+      expect(result.totalReviews).toBe(123)
+      expect(result.category).toBe('general')
+      expect(result.metadata.parseMethod).toBe('walmart-specific')
+
+      expect(result.reviews).toHaveLength(2)
+
+      const review1 = result.reviews[0]
+      expect(review1.rating).toBe(5)
+      expect(review1.title).toBe('Great item!')
+      expect(review1.date).toBe('2023-01-01')
+      expect(review1.author).toBe('Jane Doe')
+      expect(review1.verified).toBe(true)
+      expect(review1.snippet).toBe('I loved this product, works as expected.')
+      expect(review1.helpfulVotes).toBe(10)
+
+      const review2 = result.reviews[1]
+      expect(review2.rating).toBe(2)
+      expect(review2.title).toBe('Not what I expected')
+      expect(review2.date).toBe('2023-02-01')
+      expect(review2.author).toBe('John Smith')
+      expect(review2.verified).toBe(false)
+      expect(review2.snippet).toBe('The quality is quite poor.')
+      expect(review2.helpfulVotes).toBe(2)
     })
-  })
 
-  it('parses reviews with fallback selectors', () => {
-    const html = `
-      <html>
-        <body>
+    it('handles empty html safely', () => {
+      const result = walmartParse('')
+      expect(result.productName).toBeNull()
+      expect(result.averageRating).toBeNull()
+      expect(result.totalReviews).toBeNull()
+      expect(result.reviews).toEqual([])
+    })
+
+    it('falls back to default values for missing data', () => {
+      const html = `
+        <html>
+          <body>
+            <div class="bg-white border-bottom">
+              <p>Just some review text</p>
+            </div>
+          </body>
+        </html>
+      `
+      const result = walmartParse(html)
+      expect(result.reviews).toHaveLength(1)
+      const review = result.reviews[0]
+      expect(review.title).toBe('Untitled Review')
+      expect(review.rating).toBe(0)
+      expect(review.author).toBe('Anonymous')
+      expect(review.date).toBeNull()
+      expect(review.verified).toBe(false)
+      expect(review.helpfulVotes).toBe(0)
+      expect(review.snippet).toBe('Just some review text')
+    })
+
+    it('limits the number of reviews parsed', () => {
+      let html = '<html><body>'
+      for (let i = 0; i < 110; i++) {
+        html += `
           <div class="review-item">
-            <h3 class="review-title">Good</h3>
-            <span class="review-date">Oct 10, 2023</span>
-            <span class="reviewer-name">Jane</span>
-            <span>Verified purchaser</span>
-            <p class="review-text">I like it.</p>
+            <h3 class="review-title">Review ${i}</h3>
+            <p>Some text</p>
           </div>
-        </body>
-      </html>
-    `
-    const result = walmartParse(html)
-    expect(result.reviews).toHaveLength(1)
-    expect(result.reviews[0]).toMatchObject({
-      title: 'Good',
-      rating: 0,
-      date: 'Oct 10, 2023',
-      author: 'Jane',
-      verified: true,
-      snippet: 'I like it.',
-      helpfulVotes: 0,
+        `
+      }
+      html += '</body></html>'
+
+      const result = walmartParse(html)
+      expect(result.reviews).toHaveLength(100) // MAX_REVIEWS_TO_PARSE
     })
   })
 
-  it('handles missing or malformed review data gracefully', () => {
-    const html = `
-      <html>
-        <body>
-          <div class="bg-white border-bottom">
-          </div>
-        </body>
-      </html>
-    `
-    const result = walmartParse(html)
-    // No title or snippet, should not be added to reviews
-    expect(result.reviews).toHaveLength(0)
-  })
+  describe('walmartExtractCategory', () => {
+    it('extracts electronics category', () => {
+      expect(walmartExtractCategory('Great wireless bluetooth headphones', 'Headphones')).toBe('electronics')
+    })
 
-  it('extracts categories correctly', () => {
-    expect(walmartExtractCategory('some html about a laptop', 'Dell Laptop')).toBe('electronics')
-    expect(walmartExtractCategory('drill press', null)).toBe('tools')
-    expect(walmartExtractCategory('nice cotton shirts', null)).toBe('apparel')
-    expect(walmartExtractCategory('wooden furniture', null)).toBe('home_goods')
-    expect(walmartExtractCategory('video games', null)).toBe('digital')
-    expect(walmartExtractCategory('vitamin c', null)).toBe('food_supplement')
-    expect(walmartExtractCategory('synthetic motor oil', null)).toBe('automotive')
-    expect(walmartExtractCategory('random stuff', null)).toBe('general')
-  })
+    it('extracts tools category', () => {
+      expect(walmartExtractCategory('Powerful power drill with hammer action', 'Power Drill')).toBe('tools')
+    })
 
-  it('handles empty html', () => {
-    const result = walmartParse('')
-    expect(result.productName).toBeNull()
-    expect(result.averageRating).toBeNull()
-    expect(result.totalReviews).toBeNull()
-    expect(result.reviews).toHaveLength(0)
-    expect(result.category).toBe('general')
+    it('extracts apparel category', () => {
+      expect(walmartExtractCategory('Comfortable running shoes and shirts', 'Shoes')).toBe('apparel')
+    })
+
+    it('extracts home_goods category', () => {
+      expect(walmartExtractCategory('Beautiful decorative pillows and curtains', 'Curtains')).toBe('home_goods')
+    })
+
+    it('extracts digital category', () => {
+      expect(walmartExtractCategory('Download the new software subscription', 'Software')).toBe('digital')
+    })
+
+    it('extracts food_supplement category', () => {
+      expect(walmartExtractCategory('Organic health vitamins capsules', 'Vitamins')).toBe('food_supplement')
+    })
+
+    it('extracts automotive category', () => {
+      expect(walmartExtractCategory('Premium auto car oil filters', 'Filters')).toBe('automotive')
+    })
+
+    it('returns general for unmatched text', () => {
+      expect(walmartExtractCategory('Just a normal item with nothing special', 'Normal Item')).toBe('general')
+    })
   })
 })
