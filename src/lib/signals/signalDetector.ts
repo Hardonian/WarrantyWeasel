@@ -48,18 +48,19 @@ function detectTemporalSync(reviews: ParsedReview[]): SignalResult | null {
 
 // Detect duplicate or near-duplicate review text
 function detectLinguisticMirror(reviews: ParsedReview[]): SignalResult | null {
+  const snippetCounts = new Map<string, number>()
   const duplicates: string[] = []
   const seen = new Set<string>()
 
   for (const review of reviews) {
     const snippet = review.snippet.toLowerCase().trim()
-    if (snippet.length > 20) {
-      if (seen.has(snippet)) {
-        duplicates.push(snippet.slice(0, 100))
-      } else {
-        seen.add(snippet)
-      }
+    if (snippet.length <= 20) continue
+
+    const count = snippetCounts.get(snippet) || 0
+    if (count > 0) {
+      duplicates.push(snippet.slice(0, 100))
     }
+    snippetCounts.set(snippet, count + 1)
   }
 
   if (duplicates.length > 0) {
