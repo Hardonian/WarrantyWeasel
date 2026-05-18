@@ -48,6 +48,27 @@ describe('degraded state handler', () => {
       expect(result.confidenceImpact).toBeLessThanOrEqual(100)
     })
 
+
+    it('maintains history within MAX_HISTORY limit', () => {
+      // MAX_HISTORY is 100 in the implementation
+      for (let i = 0; i < 105; i++) {
+        handleDegradedState({
+          reason: `test-${i}`,
+          failureId: null,
+          fallback: 'none',
+          userMessage: 'Test',
+          confidenceImpact: 10,
+        })
+      }
+
+      const history = getDegradedHistory()
+      expect(history.length).toBe(100)
+
+      // Should have kept the most recent 100 entries (indexes 5 through 104)
+      expect(history[0].reason).toBe('test-5')
+      expect(history[99].reason).toBe('test-104')
+    })
+
     it('records to history', () => {
       handleDegradedState({
         reason: 'test',
