@@ -48,15 +48,19 @@ function detectTemporalSync(reviews: ParsedReview[]): SignalResult | null {
 
 // Detect duplicate or near-duplicate review text
 function detectLinguisticMirror(reviews: ParsedReview[]): SignalResult | null {
-  const snippets = reviews.map((r) => r.snippet.toLowerCase().trim())
+  const snippetCounts = new Map<string, number>()
   const duplicates: string[] = []
+  const seen = new Set<string>()
 
-  for (let i = 0; i < snippets.length; i++) {
-    for (let j = i + 1; j < snippets.length; j++) {
-      if (snippets[i].length > 20 && snippets[i] === snippets[j]) {
-        duplicates.push(snippets[i].slice(0, 100))
-      }
+  for (const review of reviews) {
+    const snippet = review.snippet.toLowerCase().trim()
+    if (snippet.length <= 20) continue
+
+    const count = snippetCounts.get(snippet) || 0
+    if (count > 0) {
+      duplicates.push(snippet.slice(0, 100))
     }
+    snippetCounts.set(snippet, count + 1)
   }
 
   if (duplicates.length > 0) {
@@ -77,21 +81,25 @@ function detectLinguisticMirror(reviews: ParsedReview[]): SignalResult | null {
 }
 
 // Detect sentiment mismatch (rating vs text)
+const NEGATIVE_WORDS_REGEX = new RegExp(['terrible', 'awful', 'worst', 'hate', 'broke', 'defective', 'waste', 'disappointing', 'garbage', 'useless'].join('|'), 'g')
+const POSITIVE_WORDS_REGEX = new RegExp(['excellent', 'amazing', 'love', 'great', 'perfect', 'best', 'wonderful', 'fantastic', 'outstanding'].join('|'), 'g')
+
 function detectSentimentMismatch(reviews: ParsedReview[]): SignalResult | null {
   const mismatches: { rating: number; snippet: string }[] = []
 
   for (const review of reviews) {
     const text = review.snippet.toLowerCase()
-    const negativeWords = ['terrible', 'awful', 'worst', 'hate', 'broke', 'defective', 'waste', 'disappointing', 'garbage', 'useless']
-    const positiveWords = ['excellent', 'amazing', 'love', 'great', 'perfect', 'best', 'wonderful', 'fantastic', 'outstanding']
 
-    const negCount = negativeWords.filter((w) => text.includes(w)).length
-    const posCount = positiveWords.filter((w) => text.includes(w)).length
-
-    if (review.rating >= 4 && negCount >= 2) {
-      mismatches.push({ rating: review.rating, snippet: review.snippet })
-    } else if (review.rating <= 2 && posCount >= 2) {
-      mismatches.push({ rating: review.rating, snippet: review.snippet })
+    if (review.rating >= 4) {
+      const negMatch = text.match(NEGATIVE_WORDS_REGEX)
+      if (negMatch && new Set(negMatch).size >= 2) {
+        mismatches.push({ rating: review.rating, snippet: review.snippet })
+      }
+    } else if (review.rating <= 2) {
+      const posMatch = text.match(POSITIVE_WORDS_REGEX)
+      if (posMatch && new Set(posMatch).size >= 2) {
+        mismatches.push({ rating: review.rating, snippet: review.snippet })
+      }
     }
   }
 
