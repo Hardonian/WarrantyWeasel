@@ -44,6 +44,35 @@ describe('reviewParser', () => {
     expect(result.productName).toBeNull()
   })
 
+  it('skips invalid JSON-LD and parses the next valid script', () => {
+    const html = `
+      <html>
+        <head>
+          <script type="application/ld+json">
+            { invalid json }
+          </script>
+          <script type="application/ld+json">
+            {
+              "@context": "https://schema.org",
+              "@type": "Product",
+              "name": "Second Product",
+              "aggregateRating": {
+                "@type": "AggregateRating",
+                "ratingValue": "4.5",
+                "reviewCount": "200"
+              }
+            }
+          </script>
+        </head>
+        <body></body>
+      </html>
+    `
+    const result = parseReviews(html)
+    expect(result.productName).toBe('Second Product')
+    expect(result.averageRating).toBe(4.5)
+    expect(result.totalReviews).toBe(200)
+  })
+
   it('handles missing JSON-LD gracefully', () => {
     const html = '<html><body><p>No structured data</p></body></html>'
     const result = parseReviews(html)
