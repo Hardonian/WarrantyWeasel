@@ -1,10 +1,7 @@
-🎯 **What:** The testing gap addressed was that `detectFailureType` in `src/lib/scraper/fetchController.ts` was not tested, especially the check for empty 200 responses (where `status === 200` and `html.length < 500`).
+🧪 Add error path test for invalid JSON-LD
 
-📊 **Coverage:** Scenarios tested include:
-  * Empty 200 responses (`html.length < 500`).
-  * Normal 200 responses (`html.length >= 500`).
-  * 429 status code handling.
-  * 500 status code handling.
-  * The e2e `fetchController` path to simulate an empty 200 response and check the degraded fetch result.
+🎯 **What:** Added a test to verify that `parseJsonLd` correctly handles invalid JSON-LD in `src/lib/parsers/reviewParser.ts:68` by trying to parse subsequent JSON-LD scripts when the first one fails.
 
-✨ **Result:** Test coverage for `detectFailureType` has been established, ensuring the check correctly catches and handles responses that are inappropriately sized, reducing regression risk.
+📊 **Coverage:** The test ensures the error path for `JSON.parse` handles bad JSON correctly and utilizes `continue` to attempt parsing the next script.
+
+✨ **Result:** Test coverage improved and the edge case is officially verified.

@@ -98,4 +98,33 @@ describe('reviewParser', () => {
     const result = parseReviews(html)
     expect(result.category).toBe('electronics')
   })
+
+  it('continues parsing if one JSON-LD script is invalid but another is valid', () => {
+    const html = `
+      <html>
+        <head>
+          <script type="application/ld+json">
+            { invalid json }
+          </script>
+          <script type="application/ld+json">
+            {
+              "@context": "https://schema.org",
+              "@type": "Product",
+              "name": "Second Product",
+              "aggregateRating": {
+                "@type": "AggregateRating",
+                "ratingValue": "4.5",
+                "reviewCount": "100"
+              }
+            }
+          </script>
+        </head>
+        <body></body>
+      </html>
+    `
+    const result = parseReviews(html)
+    expect(result.productName).toBe('Second Product')
+    expect(result.averageRating).toBe(4.5)
+  })
+
 })
