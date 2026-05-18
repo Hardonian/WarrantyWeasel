@@ -53,25 +53,37 @@ export function textSimilarity(a: string, b: string): number {
 }
 
 function levenshteinDistance(a: string, b: string): number {
-  const matrix: number[][] = []
-  for (let i = 0; i <= b.length; i++) {
-    matrix[i] = [i]
+  if (a.length < b.length) {
+    const temp = a
+    a = b
+    b = temp
   }
-  for (let j = 0; j <= a.length; j++) {
-    matrix[0][j] = j
+  if (b.length === 0) return a.length
+
+  let prevRow = new Uint32Array(b.length + 1)
+  let currRow = new Uint32Array(b.length + 1)
+
+  for (let j = 0; j <= b.length; j++) {
+    prevRow[j] = j
   }
-  for (let i = 1; i <= b.length; i++) {
-    for (let j = 1; j <= a.length; j++) {
-      if (b.charAt(i - 1) === a.charAt(j - 1)) {
-        matrix[i][j] = matrix[i - 1][j - 1]
+
+  for (let i = 1; i <= a.length; i++) {
+    currRow[0] = i
+    const aChar = a.charCodeAt(i - 1)
+    for (let j = 1; j <= b.length; j++) {
+      if (aChar === b.charCodeAt(j - 1)) {
+        currRow[j] = prevRow[j - 1]
       } else {
-        matrix[i][j] = Math.min(
-          matrix[i - 1][j - 1] + 1,
-          matrix[i][j - 1] + 1,
-          matrix[i - 1][j] + 1,
-        )
+        currRow[j] = Math.min(
+          prevRow[j - 1],
+          currRow[j - 1],
+          prevRow[j]
+        ) + 1
       }
     }
+    const tempRow = prevRow
+    prevRow = currRow
+    currRow = tempRow
   }
-  return matrix[b.length][a.length]
+  return prevRow[b.length]
 }
