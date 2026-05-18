@@ -51,11 +51,32 @@ describe('failureRegistry', () => {
     expect(fs?.id).toBe('FS-01')
   })
 
-  it('getAllFailureIds returns all 50 IDs', () => {
-    const ids = getAllFailureIds()
-    expect(ids.length).toBe(50)
-    expect(ids).toContain('FS-01')
-    expect(ids).toContain('FS-50')
+  describe('getAllFailureIds', () => {
+    it('returns all 50 IDs', () => {
+      const ids = getAllFailureIds()
+      expect(ids.length).toBe(50)
+      expect(ids).toContain('FS-01')
+      expect(ids).toContain('FS-50')
+    })
+
+    it('returns exactly the same number of IDs as there are failure scenarios', () => {
+      const ids = getAllFailureIds()
+      expect(ids.length).toBe(failureScenarios.length)
+    })
+
+    it('returns all IDs independent of failureScenarios export matching logic', () => {
+      const ids = getAllFailureIds()
+      expect(ids[0]).toBe('FS-01')
+      expect(ids[ids.length - 1]).toBe('FS-50')
+      expect(new Set(ids).size).toBe(ids.length)
+    })
+
+    it('returns only strings', () => {
+      const ids = getAllFailureIds()
+      for (const id of ids) {
+        expect(typeof id).toBe('string')
+      }
+    })
   })
 
   // Verify key failure scenarios exist
