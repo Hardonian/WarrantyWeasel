@@ -1,10 +1,8 @@
-🎯 **What:** The testing gap addressed was that `detectFailureType` in `src/lib/scraper/fetchController.ts` was not tested, especially the check for empty 200 responses (where `status === 200` and `html.length < 500`).
+🎯 **What:** The testing gap addressed was that `GET` in `src/app/api/health/route.ts` was not tested, especially the check for its static response object and correct status.
 
 📊 **Coverage:** Scenarios tested include:
-  * Empty 200 responses (`html.length < 500`).
-  * Normal 200 responses (`html.length >= 500`).
-  * 429 status code handling.
-  * 500 status code handling.
-  * The e2e `fetchController` path to simulate an empty 200 response and check the degraded fetch result.
+  * Happy path status code (`200`).
+  * Expected JSON shape (includes `ok: true`, `status: 'healthy'`, `version: '0.1.0'`).
+  * Verify `timestamp` is a valid ISO string.
 
-✨ **Result:** Test coverage for `detectFailureType` has been established, ensuring the check correctly catches and handles responses that are inappropriately sized, reducing regression risk.
+✨ **Result:** Test coverage for the health check API has been established, ensuring the check correctly catches and handles responses.
