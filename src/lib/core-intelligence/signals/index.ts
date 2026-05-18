@@ -1,5 +1,17 @@
 import type { SuspiciousSignal, SafeSignal, SignalResult, ParsedReview, SignalEvidence } from '../types'
 
+
+const lowercasedTextCache = new WeakMap<ParsedReview, string>()
+
+function getLowercasedText(review: ParsedReview): string {
+  let text = lowercasedTextCache.get(review)
+  if (text === undefined) {
+    text = review.snippet.toLowerCase() + ' ' + review.title.toLowerCase()
+    lowercasedTextCache.set(review, text)
+  }
+  return text
+}
+
 export const suspiciousSignals: Record<string, SuspiciousSignal> = {
   temporal_sync: {
     name: 'temporal_sync',
@@ -414,7 +426,7 @@ function detectIncentiveDisclosure(reviews: ParsedReview[]): SignalResult | null
   const incentivized: string[] = []
 
   for (const review of reviews) {
-    const text = review.snippet.toLowerCase() + ' ' + review.title.toLowerCase()
+    const text = getLowercasedText(review)
     if (incentiveKeywords.some((kw) => text.includes(kw))) {
       incentivized.push(review.snippet.slice(0, 150))
     }
@@ -447,7 +459,7 @@ function detectSafetyConcerns(reviews: ParsedReview[]): SignalResult | null {
   const safetyReviews: { snippet: string }[] = []
 
   for (const review of reviews) {
-    const text = review.snippet.toLowerCase() + ' ' + review.title.toLowerCase()
+    const text = getLowercasedText(review)
     const found = safetyKeywords.filter((kw) => text.includes(kw))
     if (found.length > 0) {
       safetyReviews.push({ snippet: review.snippet.slice(0, 200) })
@@ -481,7 +493,7 @@ function detectWarrantyComplaints(reviews: ParsedReview[]): SignalResult | null 
   const warrantyReviews: { snippet: string }[] = []
 
   for (const review of reviews) {
-    const text = review.snippet.toLowerCase() + ' ' + review.title.toLowerCase()
+    const text = getLowercasedText(review)
     if (warrantyKeywords.some((kw) => text.includes(kw))) {
       warrantyReviews.push({ snippet: review.snippet.slice(0, 200) })
     }
@@ -514,7 +526,7 @@ function detectCounterfeitSignals(reviews: ParsedReview[]): SignalResult | null 
   const counterfeitReviews: { snippet: string }[] = []
 
   for (const review of reviews) {
-    const text = review.snippet.toLowerCase() + ' ' + review.title.toLowerCase()
+    const text = getLowercasedText(review)
     if (counterfeitKeywords.some((kw) => text.includes(kw))) {
       counterfeitReviews.push({ snippet: review.snippet.slice(0, 200) })
     }
@@ -547,7 +559,7 @@ function detectSubscriptionTrap(reviews: ParsedReview[]): SignalResult | null {
   const subscriptionReviews: { snippet: string }[] = []
 
   for (const review of reviews) {
-    const text = review.snippet.toLowerCase() + ' ' + review.title.toLowerCase()
+    const text = getLowercasedText(review)
     if (subscriptionKeywords.some((kw) => text.includes(kw))) {
       subscriptionReviews.push({ snippet: review.snippet.slice(0, 200) })
     }
