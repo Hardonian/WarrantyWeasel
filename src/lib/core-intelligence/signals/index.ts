@@ -326,11 +326,14 @@ function detectKeywordSpam(reviews: ParsedReview[]): SignalResult | null {
     if (words.length < 10) continue
 
     const wordFreq: Record<string, number> = {}
+    let maxFreq = 0
     for (const word of words) {
-      wordFreq[word] = (wordFreq[word] || 0) + 1
+      const count = (wordFreq[word] || 0) + 1
+      wordFreq[word] = count
+      if (count > maxFreq) {
+        maxFreq = count
+      }
     }
-
-    const maxFreq = Math.max(...Object.values(wordFreq))
     const density = maxFreq / words.length
 
     if (density > 0.15 && maxFreq >= 3) {
