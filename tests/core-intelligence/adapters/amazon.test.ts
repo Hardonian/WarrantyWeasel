@@ -15,7 +15,7 @@ describe('amazon adapter', () => {
             <span data-hook="total-review-count">1,234 global ratings</span>
 
             <div data-hook="review">
-              <a data-hook="review-star-rating"><span class="a-star-5"></span></a>
+              <a data-hook="review-star-rating" class="a-star-5"><span></span></a>
               <a data-hook="review-title">
                 <span>Amazing product!</span>
               </a>
@@ -29,7 +29,7 @@ describe('amazon adapter', () => {
             </div>
 
             <div data-hook="review">
-              <a data-hook="review-star-rating"><span class="a-star-3"></span></a>
+              <a data-hook="review-star-rating" class="a-star-3"><span></span></a>
               <a data-hook="review-title">
                 <span>It's okay</span>
               </a>

@@ -99,6 +99,8 @@ describe('analyzeUrl', () => {
     vi.mocked(coreIntelligence.handleDegradedState).mockReturnValue({
       verdict: 'CAUTION',
       confidenceImpact: 50,
+      userMessage: 'Test user message',
+      shouldReturnUnknown: false
     })
 
     const result = await analyzeUrl(mockUrl)
@@ -131,6 +133,8 @@ describe('analyzeUrl', () => {
     vi.mocked(coreIntelligence.computeConfidence).mockReturnValue({
       confidence: 85,
       explanation: 'High confidence',
+      capped: false,
+      capReason: null
     })
     vi.mocked(coreIntelligence.computeScore).mockReturnValue({
       verdict: 'BUY',
@@ -138,7 +142,8 @@ describe('analyzeUrl', () => {
       confidenceExplanation: 'High confidence',
       reasons: ['Reason 1'],
       limitations: ['Limitation 1'],
-      signals: [{ name: 'mock_signal', weight: 10, explanation: 'mock expl' } as any]
+      signals: [{ name: 'mock_signal', weight: 10, explanation: 'mock expl' } as any],
+      score: 85
     })
 
     const result = await analyzeUrl(mockUrl)
