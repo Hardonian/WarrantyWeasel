@@ -84,6 +84,7 @@ export {
   createCache,
   getUrlHash,
   getCachedResult,
+  getCachedResultById,
   setCachedResult,
   withCoalescing,
 } from './cache'

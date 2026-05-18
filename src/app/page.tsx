@@ -35,7 +35,7 @@ export default function Home() {
       }
 
       // Navigate to result page with data
-      router.push(`/result?data=${encodeURIComponent(JSON.stringify(data))}`)
+      router.push(`/result?id=${data.resultId}`)
     } catch {
       setError('Network error. Please try again.')
     } finally {

@@ -31,6 +31,19 @@ class IntelligenceCache {
     return entry.result
   }
 
+  getById(id: string): AnalysisResult | null {
+    for (const [urlHash, entry] of this.cache.entries()) {
+      if (entry.result.resultId === id) {
+        if (entry.expiresAt <= Date.now()) {
+          this.cache.delete(urlHash)
+          return null
+        }
+        return entry.result
+      }
+    }
+    return null
+  }
+
   set(urlHash: string, result: AnalysisResult, ttl?: number): void {
     if (this.cache.size >= this.config.maxSize) {
       const oldestKey = this.cache.keys().next().value
@@ -86,6 +99,10 @@ export function getUrlHash(url: string): string {
 
 export function getCachedResult(urlHash: string): AnalysisResult | null {
   return cache.get(urlHash)
+}
+
+export function getCachedResultById(id: string): AnalysisResult | null {
+  return cache.getById(id)
 }
 
 export function setCachedResult(

@@ -1,7 +1,7 @@
 'use client'
 
 import { useSearchParams } from 'next/navigation'
-import { Suspense } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import Link from 'next/link'
 import type { AnalysisResult } from '@/types'
 import VerdictBadge from '@/components/VerdictBadge'
@@ -11,9 +11,39 @@ import LimitationsList from '@/components/LimitationsList'
 
 function ResultContent() {
   const searchParams = useSearchParams()
-  const dataParam = searchParams.get('data')
+  const idParam = searchParams.get('id')
+  const [result, setResult] = useState<AnalysisResult | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  if (!dataParam) {
+  useEffect(() => {
+    if (!idParam) {
+      setLoading(false)
+      return
+    }
+
+    fetch(`/api/result?id=${idParam}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (!data.ok) {
+          setError(data.message || 'Analysis result not found.')
+        } else {
+          setResult(data)
+        }
+      })
+      .catch(() => {
+        setError('Network error loading result.')
+      })
+      .finally(() => {
+        setLoading(false)
+      })
+  }, [idParam])
+
+  if (loading) {
+    return <div className="p-8 text-center">Loading result...</div>
+  }
+
+  if (!idParam) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-12 text-center">
         <p className="text-gray-600">No analysis data found.</p>
@@ -24,13 +54,10 @@ function ResultContent() {
     )
   }
 
-  let result: AnalysisResult
-  try {
-    result = JSON.parse(decodeURIComponent(dataParam))
-  } catch {
+  if (error || !result) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-12 text-center">
-        <p className="text-gray-600">Invalid analysis data.</p>
+        <p className="text-gray-600">{error || 'Invalid analysis data.'}</p>
         <Link href="/" className="mt-4 inline-block text-blue-600 hover:underline">
           Go back to analyzer
         </Link>
@@ -39,6 +66,7 @@ function ResultContent() {
   }
 
   async function handleShare() {
+    if (!result) return
     const shareText = `ReviewGhost Analysis: ${result.verdict} (${result.confidence}% confidence) for ${result.productName || 'product'}`
     if (navigator.clipboard) {
       await navigator.clipboard.writeText(shareText)
