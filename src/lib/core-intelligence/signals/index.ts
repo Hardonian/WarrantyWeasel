@@ -285,18 +285,35 @@ function detectLinguisticMirror(reviews: ParsedReview[]): SignalResult | null {
 function detectSentimentMismatch(reviews: ParsedReview[]): SignalResult | null {
   const mismatches: { rating: number; snippet: string }[] = []
 
+  const negativeWords = ['terrible', 'awful', 'worst', 'hate', 'broke', 'defective', 'waste', 'disappointing', 'garbage', 'useless']
+  const positiveWords = ['excellent', 'amazing', 'love', 'great', 'perfect', 'best', 'wonderful', 'fantastic', 'outstanding']
+
   for (const review of reviews) {
+    if (review.rating === 3) continue;
+
     const text = review.snippet.toLowerCase()
-    const negativeWords = ['terrible', 'awful', 'worst', 'hate', 'broke', 'defective', 'waste', 'disappointing', 'garbage', 'useless']
-    const positiveWords = ['excellent', 'amazing', 'love', 'great', 'perfect', 'best', 'wonderful', 'fantastic', 'outstanding']
+    let matchCount = 0;
 
-    const negCount = negativeWords.filter((w) => text.includes(w)).length
-    const posCount = positiveWords.filter((w) => text.includes(w)).length
-
-    if (review.rating >= 4 && negCount >= 2) {
-      mismatches.push({ rating: review.rating, snippet: review.snippet })
-    } else if (review.rating <= 2 && posCount >= 2) {
-      mismatches.push({ rating: review.rating, snippet: review.snippet })
+    if (review.rating >= 4) {
+      for (const w of negativeWords) {
+        if (text.includes(w)) {
+          matchCount++;
+          if (matchCount >= 2) {
+            mismatches.push({ rating: review.rating, snippet: review.snippet })
+            break;
+          }
+        }
+      }
+    } else if (review.rating <= 2) {
+      for (const w of positiveWords) {
+        if (text.includes(w)) {
+          matchCount++;
+          if (matchCount >= 2) {
+            mismatches.push({ rating: review.rating, snippet: review.snippet })
+            break;
+          }
+        }
+      }
     }
   }
 
