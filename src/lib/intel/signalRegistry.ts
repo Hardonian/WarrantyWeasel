@@ -194,12 +194,15 @@ export const safeSignals: SafeSignal[] = [
   },
 ]
 
+const suspiciousSignalMap: Record<string, SuspiciousSignal> = Object.fromEntries(suspiciousSignals.map(s => [s.name, s]))
+const safeSignalMap: Record<string, SafeSignal> = Object.fromEntries(safeSignals.map(s => [s.name, s]))
+
 export function getSuspiciousSignal(name: string): SuspiciousSignal | undefined {
-  return suspiciousSignals.find((s) => s.name === name)
+  return suspiciousSignalMap[name]
 }
 
 export function getSafeSignal(name: string): SafeSignal | undefined {
-  return safeSignals.find((s) => s.name === name)
+  return safeSignalMap[name]
 }
 
 export function getMaxSuspiciousWeight(): number {
