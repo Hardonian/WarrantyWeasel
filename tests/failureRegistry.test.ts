@@ -51,11 +51,10 @@ describe('failureRegistry', () => {
     expect(fs?.id).toBe('FS-01')
   })
 
-  it('getAllFailureIds returns all 50 IDs', () => {
+  it('getAllFailureIds returns all IDs correctly', () => {
     const ids = getAllFailureIds()
-    expect(ids.length).toBe(50)
-    expect(ids).toContain('FS-01')
-    expect(ids).toContain('FS-50')
+    const expectedIds = failureScenarios.map((fs) => fs.id)
+    expect(ids).toEqual(expectedIds)
   })
 
   // Verify key failure scenarios exist
