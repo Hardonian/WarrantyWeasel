@@ -60,7 +60,23 @@ describe('degraded state handler', () => {
       expect(history.length).toBe(1)
       expect(history[0].reason).toBe('test')
     })
+    it('maintains history within MAX_HISTORY limit', () => {
+      for (let i = 0; i < 105; i++) {
+        handleDegradedState({
+          reason: `test-${i}`,
+          failureId: null,
+          fallback: 'none',
+          userMessage: 'Test',
+          confidenceImpact: 10,
+        })
+      }
+      const history = getDegradedHistory()
+      expect(history.length).toBe(100)
+      expect(history[0].reason).toBe('test-5')
+      expect(history[99].reason).toBe('test-104')
+    })
   })
+
 
   describe('getDegradedHistory', () => {
     it('returns copy of history', () => {
