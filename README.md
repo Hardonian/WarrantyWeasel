@@ -2,6 +2,10 @@
 
 **See through fake reviews.**
 
+<!-- BEGIN: EPYC GPU STACK -->
+![EPYC GPU Stack — private, local-first inference fabric](assets/epyc-gpu-fabric.svg)
+<!-- END: EPYC GPU STACK -->
+
 ReviewGhost analyzes publicly available product review pages to detect suspicious patterns that may indicate manipulated, fake, or unreliable reviews.
 
 ## What It Does
