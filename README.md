@@ -2,9 +2,9 @@
 
 **See through fake reviews.**
 
-<!-- BEGIN: EPYC GPU STACK -->
-![EPYC GPU Stack — private, local-first inference fabric](assets/epyc-gpu-fabric.svg)
-<!-- END: EPYC GPU STACK -->
+<!-- BEGIN: REPO HERO -->
+![Repository hero generated locally on the EPYC GPU stack](assets/repo-hero.png)
+<!-- END: REPO HERO -->
 
 ReviewGhost analyzes publicly available product review pages to detect suspicious patterns that may indicate manipulated, fake, or unreliable reviews.
 
